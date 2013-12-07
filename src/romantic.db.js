@@ -8,7 +8,6 @@
 // http://jcraige.com
 //
 // *TODO:*
-// +  Make cid unique
 // +  Set up query functions to accept an array
 // +  Remove store2 dependency
 //
@@ -58,25 +57,115 @@
   // LocalStorage Adapter Methods
   // ------------------------------
 
+  // Guid generation borrowed from
+  // http://documentup.com/jeromegn/backbone.localStorage
+  // Generate four random hex digits.
+  function S4() {
+    return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
+  };
+
+  // Generate a pseudo-GUID by concatenating random hexadecimal.
+  function guid() {
+    return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
+  };
+
+  // Adapter API
+  //  + save
+  //  + batch
+  //  + keys
+  //  + set
+  //  + get
+  //  + destroy
+  //  + all
+  //  + exists
+  //  + destroyAll
   _.extend(LocalStorage.prototype, {
-    initialize: function(dbName) {
-      this.setupDatabase(dbName);
+    initialize: function(options) {
+      this.setupDatabase(options.dbName);
+      this.setupTable(options.tableName);
       return this;
     },
     setupDatabase: function(dbName) {
       this.database = store.namespace(dbName);
     },
-    set: function(tableName, data) {
-      return this.database(tableName, data);
+    setupTable: function(tableName) {
+      this.tableName = tableName;
+
+      if(!_.include(this.tables(), this.tableName)) {
+        this.setTable([]);
+      } else {
+        this.table = this.database(this.tableName);
+      }
     },
-    get: function(tableName) {
-      return this.database(tableName)
+
+    // Replaces the table with the array of objects passed in
+    save: function(newTable) {
+      if(newTable == null) { newTable = this.table; }
+      return this.setTable(newTable);
     },
+    setTable: function(data) {
+      this.database.set(this.tableName, data);
+      this.table = this.database.get(this.tableName);
+      return this.table;
+    },
+    // Returns a list of all the tables in the database
     tables: function(tableName) {
       return this.database.keys();
     },
-    destroyAll: function(tableName) {
-      return this.database.remove(tableName);
+    // Removes the table completely from the database
+    destroyAll: function() {
+      return this.database.remove(this.tableName);
+    },
+    // Returns the table, an array of objects
+    all: function() {
+      return this.table;
+    },
+    // WHen passed in an object/string/num it will pull out the id or cid and
+    // find that in the table
+    find: function(data) {
+      var id;
+      id = data;
+
+      if(data instanceof Object) {
+        id = data.id || data.cid;
+      }
+
+      // Purposely using == and not === as to prevent type issues from coming
+      // up when using localStorage as it could really be stored either way
+      match = _.find(this.table, function(row){
+        return row.id == id || row.cid == id
+      });
+      return match;
+    },
+    // Pass in an object that will be given a unique id, pushed onto the table,
+    // and saved
+    create: function(data) {
+      var table;
+      data.cid = guid();
+      this.table.push(data);
+      this.save();
+    },
+    // Pass in an object that will be updated and saved
+    update: function(data) {
+      var row, index;
+      row   = this.find(data);
+      index = _.indexOf(this.table, row);
+
+      if(!row) {
+        throw new Error('Couldnt find record with that id or cid');
+      }
+      this.table[index] = _.extend(row, data);
+      this.save();
+      return row;
+    },
+    // Pass in an object/id that will be destroyed and saved on the table
+    destroy: function(data) {
+      var row;
+      row = this.find(data);
+      if(!row) { return false; }
+      this.table = _.without(this.table, row);
+      this.save();
+      return row;
     }
   });
 
@@ -90,49 +179,24 @@
   // Table Methods
   // ------------------
 
-
-  // Guid generation borrowed from
-  // http://documentup.com/jeromegn/backbone.localStorage
-  // Generate four random hex digits.
-  function S4() {
-    return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
-  };
-
-  // Generate a pseudo-GUID by concatenating random hexadecimal.
-  function guid() {
-    return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
-  };
-
   _.extend(Table.prototype, {
 
     // When initializing a table you pass in it's name and options
-    initialize: function(name, options) {
+    initialize: function(tableName, options) {
       options || (options = {});
 
       options = _.defaults(options, {
         dbName: 'romantic'
       });
 
-      this._setStore(options);
-      this._setTable(name);
+      this._setStore(tableName, options);
       return this;
     },
 
     // This sets up the store instance inside the object
-    _setStore: function(options) {
-      var dbName, adapter;
-      dbName = options.dbName;
-
-      this._store = this.adapter ? new this.adapter(dbName) : new Romantic.LocalStorage(dbName);
-    },
-
-    // This sets up the table instance and table name inside the object
-    _setTable: function(name) {
-      if(name) { this.tableName = name; }
-
-      if(!_.include(this._store.tables(), this.tableName)) { this._store.set(this.tableName, []); }
-
-      this._table = this._store.get(this.tableName);
+    _setStore: function(tableName, options) {
+      options.tableName = this.tableName || tableName
+      this._store = this.adapter ? new this.adapter(options) : new Romantic.LocalStorage(options);
     },
 
     // Takes an optional table parameter(array of objects), this allows you to
@@ -146,9 +210,17 @@
     //     var carsTable = new Romantic.DB.Table('cars');
     //     carsTable.save(cars);
     save: function(table) {
-      if(table == null) { table = this._table; }
-      this._store.set(this.tableName, table);
-      return table;
+      return this._store.setTable(this.filterData(table));
+    },
+
+    // Utility function to console.table out the table for easy debugging
+    logTable: function() {
+      console.table(this._store.table);
+    },
+
+    // Utility function to console.log out the table for easy debugging
+    log: function() {
+      console.log(this._store.table);
     },
 
     // Filters data to attributes specified in schema.
@@ -186,67 +258,51 @@
         validKeys = ['cid'];
 
         if(_.isArray(this.schema)) {
-          validKeys = this.schema;
+          // Add each value in the array as a valid key
+          _.each(this.schema, function(column){
+            validKeys.push(column);
+          });
 
         } else if(_.isObject(this.schema)) {
 
           _.each(this.schema, function(val, key) {
-
             // Accept attribute if the key is 'any' or it's a function and that
             // function returns true with the value of the key passed in
             if(val === 'any' || _.isFunction(val) && val(data[key])) {
               validKeys.push(key);
             } else {
-
-              // TODO: Refactor this to loop over all valid strings and call the
-              // underscore method based on the string.
-              switch(val) {
-                case 'array':
-                  if(_.isArray(data[key])) { validKeys.push(key); }
-                  break;
-                case 'object':
-                  if(_.isObject(data[key])) { validKeys.push(key); }
-                  break;
-                case 'string':
-                  if(_.isString(data[key])) { validKeys.push(key); }
-                  break;
-                case 'number':
-                  if(_.isNumber(data[key])) { validKeys.push(key); }
-                  break;
-                case 'boolean':
-                  if(_.isBoolean(data[key])) { validKeys.push(key); }
-                  break;
-                case 'date':
-                  if(_.isDate(data[key])) { validKeys.push(key); }
-                  break;
-              }
-
+              // Loop through accepted types and use underscores method to
+              // verify that it is one of those types
+              acceptedTypes = ['array', 'object', 'string', 'number', 'boolean', 'date'];
+              _.each(acceptedTypes, function(type) {
+                if(val === type && _['is'+type.capitalize()](data[key])) {
+                  validKeys.push(key);
+                }
+              });
             }
 
           });
 
         }
 
+        // Returns new object with only the keys from validKeys pulled out
         return _.pick(data, validKeys);
 
         } else {
-          throw new error('Invalid schema entered');
+          throw new Error('Invalid schema entered');
         }
       return data;
     },
 
     // Takes in an object of attributes and saves it with a unique cid
     create: function(data) {
-      data.cid = guid();
-
-      this._table.push(this.filterData(data));
-      this.save();
-      return data;
+      this._store.create(this.filterData(data));
+      return this._store.find(data);
     },
 
     // Returns all data in the table as an array
     all: function() {
-      return _.map(this._table, function(row) {
+      return _.map(this._store.all(), function(row) {
         return this.filterData(row);
       }, this);
     },
@@ -254,46 +310,25 @@
     // Accepts either a data object that has an id/cid attribute or just a cid
     // or id. If it contains both, the `id` will take precendence
     find: function(data) {
-      var id;
-      id = data;
-
-      if(data instanceof Object) {
-        id = data.id || data.cid;
-      }
-
-      // Purposely using == and not === as to prevent type issues from coming
-      // up when using localStorage as it could really be stored either way
-      match = _.find(this._table, function(row){
-        return row.id == id || row.cid == id
-      });
-      return match;
+      return this._store.find(data);
     },
 
-    // Accepts a data object with changed values and will update and save the
+    // Accepts a data object with modified values and will update and save the
     // data
     update: function(data) {
-      var row, index;
-      row   = this.find(data);
-      index = _.indexOf(this._table, row);
-
-      if(!row) { return false; }
-      this._table[index] = this.filterData(_.extend(row, data));
-      this.save();
-      return row;
+      data = this.filterData(data);
+      console.log('filter', data);
+      return this._store.update(data);
     },
 
     // This destroys all data in the table and saves it
     destroyAll: function() {
-      this._store.destroyAll(this.tableName);
+      return this._store.destroyAll();
     },
 
     // Takes an Object or Id/Cid and finds it in the table and destroys it
     destroy: function(data) {
-      var row;
-      row = this.find(data);
-      this._table = _.without(this._table, row);
-      this.save();
-      return row;
+      return this._store.destroy(data);
     }
 
   });
@@ -306,7 +341,7 @@
     'reject', 'every', 'some', 'any', 'include', 'contains', 'invoke',
     'max', 'min', 'toArray', 'size', 'first', 'head', 'take', 'initial', 'rest',
     'tail', 'drop', 'last', 'without', 'difference', 'indexOf', 'shuffle',
-    'lastIndexOf', 'isEmpty', 'chain', 'sample'];
+    'lastIndexOf', 'isEmpty', 'chain', 'sample', 'where', 'findWhere'];
 
   // Mix in each Underscore method as a proxy to `Table#_table`.
   _.each(methods, function(method) {
@@ -364,13 +399,17 @@
   };
 
   // Set up inheritance for the Table
-  //
+
   // End of Code Borrowed From Backbone
   // http://backbonejs.org
   Table.extend = extend;
 
   return Romantic;
 }));
+
+String.prototype.capitalize = function() {
+  return this.substr(0,1).toUpperCase() + this.substr(1);
+};
 
 
 
