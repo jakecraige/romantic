@@ -43,7 +43,13 @@
               <p>v0.0.1</p>
 <p>Copyright (c)2013 Jake Craige
 Distributed under MIT license</p>
-<h2 id="http-jcraige-com"><a href="http://jcraige.com">http://jcraige.com</a></h2>
+<p><a href="http://jcraige.com">http://jcraige.com</a></p>
+<p><em>TODO:</em></p>
+<ul>
+<li>Set up query functions to accept an array</li>
+<li>Remove store2 dependency</li>
+</ul>
+<h2 id="description-">Description:</h2>
 
             </div>
             
@@ -56,11 +62,10 @@ Distributed under MIT license</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-3">&#182;</a>
               </div>
-              <p><em>TODO:</em></p>
-<ul>
-<li>Set up query functions to accept an array</li>
-</ul>
-<h2 id="description-">Description:</h2>
+              <p>Library for managing client side data in web and mobile applications.</p>
+<p>It treats the browser localStorage like a database and provides and interface
+for managing and querying the data.</p>
+<h2 id="dependencies-">Dependencies:</h2>
 
             </div>
             
@@ -73,8 +78,11 @@ Distributed under MIT license</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-4">&#182;</a>
               </div>
-              <p>Todo</p>
-<h2 id="usage-example-">Usage Example:</h2>
+              <ul>
+<li>Underscore - <a href="https://github.com/jashkenas/underscore">https://github.com/jashkenas/underscore</a></li>
+<li>Store2     - <a href="https://github.com/nbubna/store">https://github.com/nbubna/store</a></li>
+</ul>
+<h2 id="example-">Example:</h2>
 
             </div>
             
@@ -111,7 +119,7 @@ var destroyedJohn  = users.destroy(1); // or users.destroy(john)</code></pre>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-6">&#182;</a>
               </div>
-              <p>Create local references to array methods we&#39;ll want to use later.</p>
+              <p>Create local references to array methods we&#39;ll want to use later.(Backbone)</p>
 
             </div>
             
@@ -209,7 +217,7 @@ var destroyedJohn  = users.destroy(1); // or users.destroy(john)</code></pre>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-12">&#182;</a>
               </div>
-              <p>This sets up the databse instance inside the object</p>
+              <p>This sets up the database instance inside the object</p>
 
             </div>
             
@@ -252,10 +260,10 @@ var destroyedJohn  = users.destroy(1); // or users.destroy(john)</code></pre>
               <p>Takes an optional table parameter(array of objects), this allows you to
 completely replace the database with a new data set.</p>
 <p>It is used internally after the create, update, destroy functions</p>
-<p>Ex:</p>
-<p>  var cars = [{make: &#39;Chevrolet&#39;, cid: 1}, {make: &#39;Dodge&#39;, cid: 2}];
-  var carsTable = new Romantic.DB.Table(&#39;cars&#39;);
-  carsTable.save(cars);</p>
+<p>Example:</p>
+<pre><code>var cars = [{make: &#39;Chevrolet&#39;, cid: 1}, {make: &#39;Dodge&#39;, cid: 2}];
+var carsTable = new Romantic.DB.Table(&#39;cars&#39;);
+carsTable.save(cars);</code></pre>
 
             </div>
             
@@ -486,7 +494,11 @@ data</p>
       };
       <span class="keyword">return</span> _[method](<span class="keyword">this</span>._table, iterator, context);
     };
-  });</pre></div></div>
+  });
+
+  <span class="keyword">var</span> extend = <span class="function"><span class="keyword">function</span><span class="params">(protoProps, staticProps)</span> {</span>
+    <span class="keyword">var</span> parent = <span class="keyword">this</span>;
+    <span class="keyword">var</span> child;</pre></div></div>
             
         </li>
         
@@ -496,23 +508,6 @@ data</p>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-26">&#182;</a>
-              </div>
-              <p>Thanks Backbone!</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  <span class="keyword">var</span> extend = <span class="function"><span class="keyword">function</span><span class="params">(protoProps, staticProps)</span> {</span>
-    <span class="keyword">var</span> parent = <span class="keyword">this</span>;
-    <span class="keyword">var</span> child;</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-27">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-27">&#182;</a>
               </div>
               <p>The constructor function for the new subclass is either defined by you
 (the &quot;constructor&quot; property in your <code>extend</code> definition), or defaulted
@@ -529,11 +524,11 @@ by us to simply call the parent&#39;s constructor.</p>
         </li>
         
         
-        <li id="section-28">
+        <li id="section-27">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-28">&#182;</a>
+                <a class="pilcrow" href="#section-27">&#182;</a>
               </div>
               <p>Add static properties to the constructor function, if supplied.</p>
 
@@ -544,11 +539,11 @@ by us to simply call the parent&#39;s constructor.</p>
         </li>
         
         
-        <li id="section-29">
+        <li id="section-28">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-29">&#182;</a>
+                <a class="pilcrow" href="#section-28">&#182;</a>
               </div>
               <p>Set the prototype chain to inherit from <code>parent</code>, without calling
 <code>parent</code>&#39;s constructor function.</p>
@@ -562,11 +557,11 @@ by us to simply call the parent&#39;s constructor.</p>
         </li>
         
         
-        <li id="section-30">
+        <li id="section-29">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-30">&#182;</a>
+                <a class="pilcrow" href="#section-29">&#182;</a>
               </div>
               <p>Add prototype properties (instance properties) to the subclass,
 if supplied.</p>
@@ -578,11 +573,11 @@ if supplied.</p>
         </li>
         
         
-        <li id="section-31">
+        <li id="section-30">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-31">&#182;</a>
+                <a class="pilcrow" href="#section-30">&#182;</a>
               </div>
               <p>Set a convenience property in case the parent&#39;s prototype is needed
 later.</p>
@@ -597,11 +592,11 @@ later.</p>
         </li>
         
         
-        <li id="section-32">
+        <li id="section-31">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-32">&#182;</a>
+                <a class="pilcrow" href="#section-31">&#182;</a>
               </div>
               <p>Set up inheritance for the Table</p>
 <p>End of Code Borrowed From Backbone

@@ -6,16 +6,27 @@
 // Distributed under MIT license
 //
 // http://jcraige.com
-// --------------------
 //
 // *TODO:*
-// +   Set up query functions to accept an array
+// +  Set up query functions to accept an array
+// +  Remove store2 dependency
+//
 //
 // Description:
 // --------------------
-// Todo
+// Library for managing client side data in web and mobile applications.
 //
-// Usage Example:
+// It treats the browser localStorage like a database and provides and interface
+// for managing and querying the data.
+//
+//
+// Dependencies:
+// ------------------
+//  +  Underscore - https://github.com/jashkenas/underscore
+//  +  Store2     - https://github.com/nbubna/store
+//
+//
+// Example:
 // --------------------
 //
 //     var users          = new Romantic.Table('users', {dbName: 'apple'});
@@ -31,7 +42,7 @@
 
 }(this, function(root, Romantic, _) {
 
-  // Create local references to array methods we'll want to use later.
+  // Create local references to array methods we'll want to use later.(Backbone)
   var array = [];
 
   Romantic.VERSION = '0.0.1';
@@ -47,6 +58,7 @@
   // ------------------
 
   _.extend(Table.prototype, {
+
     // When initializing a table you pass in it's name and options
     initialize: function(name, options) {
       options || (options = {});
@@ -59,12 +71,14 @@
       this._setTable(name);
       return this;
     },
-    // This sets up the databse instance inside the object
+
+    // This sets up the database instance inside the object
     _setDatabase: function(options) {
       var dbName;
       dbName = options.dbName;
       this._database =  store.namespace(dbName);
     },
+
     // This sets up the table instance and table name inside the object
     _setTable: function(name) {
       this._tableName = name;
@@ -73,16 +87,17 @@
 
       this._table = this._database(name);
     },
+
     // Takes an optional table parameter(array of objects), this allows you to
     // completely replace the database with a new data set.
     //
     // It is used internally after the create, update, destroy functions
     //
-    // Ex:
+    // Example:
     //
-    //   var cars = [{make: 'Chevrolet', cid: 1}, {make: 'Dodge', cid: 2}];
-    //   var carsTable = new Romantic.DB.Table('cars');
-    //   carsTable.save(cars);
+    //     var cars = [{make: 'Chevrolet', cid: 1}, {make: 'Dodge', cid: 2}];
+    //     var carsTable = new Romantic.DB.Table('cars');
+    //     carsTable.save(cars);
     save: function(table) {
       if(table == null) { table = this._table; }
       this._database(this._tableName, table);
