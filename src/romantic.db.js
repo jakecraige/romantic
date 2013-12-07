@@ -8,6 +8,7 @@
 // http://jcraige.com
 //
 // *TODO:*
+// +  Make cid unique
 // +  Set up query functions to accept an array
 // +  Remove store2 dependency
 //
@@ -105,12 +106,84 @@
     },
 
     // Filters data to attributes specified in schema.
+    //
+    // It can be an array of keys:
+    //     ['firstName', 'lastName']
+    //
+    // An object with the key as the name and value as a type or function
+    // validation:
+    //     {
+    //       'address':   'string',
+    //       'age':       'integer'
+    //       'firstName': function(name) {
+    //         if(name === 'John') {
+    //           return true;
+    //         }
+    //       }
+    //     }
+    //
+    // Accepted types are:
+    //   + Any
+    //   + Array
+    //   + Object
+    //   + String
+    //   + Number
+    //   + Boolean
+    //   + Date
+    //
+    //  The object can be mixed with functions and type strings
+    //
     filterData: function(data) {
       if(this.schema) {
-        // We add the cid, so it needs to always be allowed
-        this.schema.push('cid');
-        return _.pick(data, this.schema);
-      }
+        var validKeys;
+        // We start with the cid, so it needs to always be allowed
+        validKeys = ['cid'];
+
+        if(_.isArray(this.schema)) {
+          validKeys = this.schema;
+
+        } else if(_.isObject(this.schema)) {
+
+          _.each(this.schema, function(val, key) {
+
+            // Accept attribute if the key is 'any' or it's a function and that
+            // function returns true with the value of the key passed in
+            if(val === 'any' || _.isFunction(val) && val(data[key])) {
+              validKeys.push(key);
+            } else {
+
+              switch(val) {
+                case 'array':
+                  if(_.isArray(data[key])) { validKeys.push(key); }
+                  break;
+                case 'object':
+                  if(_.isObject(data[key])) { validKeys.push(key); }
+                  break;
+                case 'string':
+                  if(_.isString(data[key])) { validKeys.push(key); }
+                  break;
+                case 'number':
+                  if(_.isNumber(data[key])) { validKeys.push(key); }
+                  break;
+                case 'boolean':
+                  if(_.isBoolean(data[key])) { validKeys.push(key); }
+                  break;
+                case 'date':
+                  if(_.isDate(data[key])) { validKeys.push(key); }
+                  break;
+              }
+
+            }
+
+          });
+
+        }
+
+        return _.pick(data, validKeys);
+
+        } else {
+          throw new error('Invalid schema entered');
+        }
       return data;
     },
 

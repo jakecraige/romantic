@@ -46,6 +46,7 @@ Distributed under MIT license</p>
 <p><a href="http://jcraige.com">http://jcraige.com</a></p>
 <p><em>TODO:</em></p>
 <ul>
+<li>Make cid unique</li>
 <li>Set up query functions to accept an array</li>
 <li>Remove store2 dependency</li>
 </ul>
@@ -283,11 +284,37 @@ carsTable.save(cars);</code></pre>
                 <a class="pilcrow" href="#section-15">&#182;</a>
               </div>
               <p>Filters data to attributes specified in schema.</p>
+<p>It can be an array of keys:
+    [&#39;firstName&#39;, &#39;lastName&#39;]</p>
+<p>An object with the key as the name and value as a type or function
+validation:
+    {
+      &#39;address&#39;:   &#39;string&#39;,
+      &#39;age&#39;:       &#39;integer&#39;
+      &#39;firstName&#39;: function(name) {
+        if(name === &#39;John&#39;) {
+          return true;
+        }
+      }
+    }</p>
+<p>Accepted types are:</p>
+<ul>
+<li>Any</li>
+<li>Array</li>
+<li>Object</li>
+<li>String</li>
+<li>Number</li>
+<li>Boolean</li>
+<li><p>Date</p>
+<p>The object can be mixed with functions and type strings</p>
+</li>
+</ul>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>    filterData: <span class="function"><span class="keyword">function</span><span class="params">(data)</span> {</span>
-      <span class="keyword">if</span>(<span class="keyword">this</span>.schema) {</pre></div></div>
+      <span class="keyword">if</span>(<span class="keyword">this</span>.schema) {
+        <span class="keyword">var</span> validKeys;</pre></div></div>
             
         </li>
         
@@ -298,15 +325,18 @@ carsTable.save(cars);</code></pre>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-16">&#182;</a>
               </div>
-              <p>We add the cid, so it needs to always be allowed</p>
+              <p>We start with the cid, so it needs to always be allowed</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>        <span class="keyword">this</span>.schema.push(<span class="string">'cid'</span>);
-        <span class="keyword">return</span> _.pick(data, <span class="keyword">this</span>.schema);
-      }
-      <span class="keyword">return</span> data;
-    },</pre></div></div>
+            <div class="content"><div class='highlight'><pre>        validKeys = [<span class="string">'cid'</span>];
+
+        <span class="keyword">if</span>(_.isArray(<span class="keyword">this</span>.schema)) {
+          validKeys = <span class="keyword">this</span>.schema;
+
+        } <span class="keyword">else</span> <span class="keyword">if</span>(_.isObject(<span class="keyword">this</span>.schema)) {
+
+          _.each(<span class="keyword">this</span>.schema, <span class="function"><span class="keyword">function</span><span class="params">(val, key)</span> {</span></pre></div></div>
             
         </li>
         
@@ -316,6 +346,59 @@ carsTable.save(cars);</code></pre>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-17">&#182;</a>
+              </div>
+              <p>Accept attribute if the key is &#39;any&#39; or it&#39;s a function and that
+function returns true with the value of the key passed in</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>            <span class="keyword">if</span>(val === <span class="string">'any'</span> || _.isFunction(val) &amp;&amp; val(data[key])) {
+              validKeys.push(key);
+            } <span class="keyword">else</span> {
+
+              <span class="keyword">switch</span>(val) {
+                <span class="keyword">case</span> <span class="string">'array'</span>:
+                  <span class="keyword">if</span>(_.isArray(data[key])) { validKeys.push(key); }
+                  <span class="keyword">break</span>;
+                <span class="keyword">case</span> <span class="string">'object'</span>:
+                  <span class="keyword">if</span>(_.isObject(data[key])) { validKeys.push(key); }
+                  <span class="keyword">break</span>;
+                <span class="keyword">case</span> <span class="string">'string'</span>:
+                  <span class="keyword">if</span>(_.isString(data[key])) { validKeys.push(key); }
+                  <span class="keyword">break</span>;
+                <span class="keyword">case</span> <span class="string">'number'</span>:
+                  <span class="keyword">if</span>(_.isNumber(data[key])) { validKeys.push(key); }
+                  <span class="keyword">break</span>;
+                <span class="keyword">case</span> <span class="string">'boolean'</span>:
+                  <span class="keyword">if</span>(_.isBoolean(data[key])) { validKeys.push(key); }
+                  <span class="keyword">break</span>;
+                <span class="keyword">case</span> <span class="string">'date'</span>:
+                  <span class="keyword">if</span>(_.isDate(data[key])) { validKeys.push(key); }
+                  <span class="keyword">break</span>;
+              }
+
+            }
+
+          });
+
+        }
+
+        <span class="keyword">return</span> _.pick(data, validKeys);
+
+        } <span class="keyword">else</span> {
+          <span class="keyword">throw</span> <span class="keyword">new</span> error(<span class="string">'Invalid schema entered'</span>);
+        }
+      <span class="keyword">return</span> data;
+    },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-18">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-18">&#182;</a>
               </div>
               <p>Takes in an object of attributes and saves it with a unique cid</p>
 
@@ -332,11 +415,11 @@ carsTable.save(cars);</code></pre>
         </li>
         
         
-        <li id="section-18">
+        <li id="section-19">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-18">&#182;</a>
+                <a class="pilcrow" href="#section-19">&#182;</a>
               </div>
               <p>Returns all data in the table as an array</p>
 
@@ -351,11 +434,11 @@ carsTable.save(cars);</code></pre>
         </li>
         
         
-        <li id="section-19">
+        <li id="section-20">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-19">&#182;</a>
+                <a class="pilcrow" href="#section-20">&#182;</a>
               </div>
               <p>Accepts either a data object that has an id/cid attribute or just a cid
 or id. If it contains both, the <code>id</code> will take precendence</p>
@@ -373,11 +456,11 @@ or id. If it contains both, the <code>id</code> will take precendence</p>
         </li>
         
         
-        <li id="section-20">
+        <li id="section-21">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-20">&#182;</a>
+                <a class="pilcrow" href="#section-21">&#182;</a>
               </div>
               <p>Purposely using == and not === as to prevent type issues from coming
 up when using localStorage as it could really be stored either way</p>
@@ -393,11 +476,11 @@ up when using localStorage as it could really be stored either way</p>
         </li>
         
         
-        <li id="section-21">
+        <li id="section-22">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-21">&#182;</a>
+                <a class="pilcrow" href="#section-22">&#182;</a>
               </div>
               <p>Accepts a data object with changed values and will update and save the
 data</p>
@@ -418,11 +501,11 @@ data</p>
         </li>
         
         
-        <li id="section-22">
+        <li id="section-23">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-22">&#182;</a>
+                <a class="pilcrow" href="#section-23">&#182;</a>
               </div>
               <p>This destroys all data in the table and saves it</p>
 
@@ -435,11 +518,11 @@ data</p>
         </li>
         
         
-        <li id="section-23">
+        <li id="section-24">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-23">&#182;</a>
+                <a class="pilcrow" href="#section-24">&#182;</a>
               </div>
               <p>Takes an Object or Id/Cid and finds it in the table and destroys it</p>
 
@@ -458,11 +541,11 @@ data</p>
         </li>
         
         
-        <li id="section-24">
+        <li id="section-25">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-24">&#182;</a>
+                <a class="pilcrow" href="#section-25">&#182;</a>
               </div>
               <p>Code Borrowed From Backbone
 <a href="http://backbonejs.org">http://backbonejs.org</a></p>
@@ -479,11 +562,11 @@ data</p>
         </li>
         
         
-        <li id="section-25">
+        <li id="section-26">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-25">&#182;</a>
+                <a class="pilcrow" href="#section-26">&#182;</a>
               </div>
               <p>Mix in each Underscore method as a proxy to <code>Table#_table</code>.</p>
 
@@ -500,11 +583,11 @@ data</p>
         </li>
         
         
-        <li id="section-26">
+        <li id="section-27">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-26">&#182;</a>
+                <a class="pilcrow" href="#section-27">&#182;</a>
               </div>
               <p>Underscore methods that take a property name as an argument.</p>
 
@@ -515,11 +598,11 @@ data</p>
         </li>
         
         
-        <li id="section-27">
+        <li id="section-28">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-27">&#182;</a>
+                <a class="pilcrow" href="#section-28">&#182;</a>
               </div>
               <p>Use attributes instead of properties.</p>
 
@@ -541,11 +624,11 @@ data</p>
         </li>
         
         
-        <li id="section-28">
+        <li id="section-29">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-28">&#182;</a>
+                <a class="pilcrow" href="#section-29">&#182;</a>
               </div>
               <p>The constructor function for the new subclass is either defined by you
 (the &quot;constructor&quot; property in your <code>extend</code> definition), or defaulted
@@ -562,11 +645,11 @@ by us to simply call the parent&#39;s constructor.</p>
         </li>
         
         
-        <li id="section-29">
+        <li id="section-30">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-29">&#182;</a>
+                <a class="pilcrow" href="#section-30">&#182;</a>
               </div>
               <p>Add static properties to the constructor function, if supplied.</p>
 
@@ -577,11 +660,11 @@ by us to simply call the parent&#39;s constructor.</p>
         </li>
         
         
-        <li id="section-30">
+        <li id="section-31">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-30">&#182;</a>
+                <a class="pilcrow" href="#section-31">&#182;</a>
               </div>
               <p>Set the prototype chain to inherit from <code>parent</code>, without calling
 <code>parent</code>&#39;s constructor function.</p>
@@ -595,11 +678,11 @@ by us to simply call the parent&#39;s constructor.</p>
         </li>
         
         
-        <li id="section-31">
+        <li id="section-32">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-31">&#182;</a>
+                <a class="pilcrow" href="#section-32">&#182;</a>
               </div>
               <p>Add prototype properties (instance properties) to the subclass,
 if supplied.</p>
@@ -611,11 +694,11 @@ if supplied.</p>
         </li>
         
         
-        <li id="section-32">
+        <li id="section-33">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-32">&#182;</a>
+                <a class="pilcrow" href="#section-33">&#182;</a>
               </div>
               <p>Set a convenience property in case the parent&#39;s prototype is needed
 later.</p>
@@ -630,11 +713,11 @@ later.</p>
         </li>
         
         
-        <li id="section-33">
+        <li id="section-34">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-33">&#182;</a>
+                <a class="pilcrow" href="#section-34">&#182;</a>
               </div>
               <p>Set up inheritance for the Table</p>
 <p>End of Code Borrowed From Backbone
