@@ -1,7 +1,8 @@
-// Romantic.DB.js   by Jake Craige 2013
+// by Jake Craige 2013
+// ---------------------------------
 //
-// TODO:
-//    Set up locator functions to accept an array
+// *TODO:*
+// +   Set up locator functions to accept an array
 //
 
 (function(root, factory) {
