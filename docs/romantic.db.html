@@ -137,7 +137,7 @@ var destroyedJohn  = users.destroy(1); // or users.destroy(john)</code></pre>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-7">&#182;</a>
               </div>
-              <h2 id="table-constructor">Table Constructor</h2>
+              <h2 id="localstorage-adapter-constructor">LocalStorage Adapter Constructor</h2>
 
             </div>
             
@@ -153,7 +153,7 @@ var destroyedJohn  = users.destroy(1); // or users.destroy(john)</code></pre>
               
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="keyword">var</span> Table = Romantic.Table = <span class="function"><span class="keyword">function</span><span class="params">(name, options)</span> {</span>
+            <div class="content"><div class='highlight'><pre>  <span class="keyword">var</span> LocalStorage = Romantic.LocalStorage = <span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
     <span class="keyword">this</span>.initialize.apply(<span class="keyword">this</span>, arguments);
   };</pre></div></div>
             
@@ -166,7 +166,7 @@ var destroyedJohn  = users.destroy(1); // or users.destroy(john)</code></pre>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-9">&#182;</a>
               </div>
-              <h2 id="table-methods">Table Methods</h2>
+              <h2 id="localstorage-adapter-methods">LocalStorage Adapter Methods</h2>
 
             </div>
             
@@ -182,7 +182,27 @@ var destroyedJohn  = users.destroy(1); // or users.destroy(john)</code></pre>
               
             </div>
             
-            <div class="content"><div class='highlight'><pre>  _.extend(Table.prototype, {</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  _.extend(LocalStorage.prototype, {
+    initialize: <span class="function"><span class="keyword">function</span><span class="params">(dbName)</span> {</span>
+      <span class="keyword">this</span>.setupDatabase(dbName);
+      <span class="keyword">return</span> <span class="keyword">this</span>;
+    },
+    setupDatabase: <span class="function"><span class="keyword">function</span><span class="params">(dbName)</span> {</span>
+      <span class="keyword">this</span>.database = store.namespace(dbName);
+    },
+    set: <span class="function"><span class="keyword">function</span><span class="params">(tableName, data)</span> {</span>
+      <span class="keyword">return</span> <span class="keyword">this</span>.database(tableName, data);
+    },
+    get: <span class="function"><span class="keyword">function</span><span class="params">(tableName)</span> {</span>
+      <span class="keyword">return</span> <span class="keyword">this</span>.database(tableName)
+    },
+    tables: <span class="function"><span class="keyword">function</span><span class="params">(tableName)</span> {</span>
+      <span class="keyword">return</span> <span class="keyword">this</span>.database.keys();
+    },
+    destroyAll: <span class="function"><span class="keyword">function</span><span class="params">(tableName)</span> {</span>
+      <span class="keyword">return</span> <span class="keyword">this</span>.database.remove(tableName);
+    }
+  });</pre></div></div>
             
         </li>
         
@@ -192,6 +212,86 @@ var destroyedJohn  = users.destroy(1); // or users.destroy(john)</code></pre>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
+              <h2 id="table-constructor">Table Constructor</h2>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="keyword">var</span> Table = Romantic.Table = <span class="function"><span class="keyword">function</span><span class="params">(name, options)</span> {</span>
+    <span class="keyword">this</span>.initialize.apply(<span class="keyword">this</span>, arguments);
+  };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-13">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-13">&#182;</a>
+              </div>
+              <h2 id="table-methods">Table Methods</h2>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-14">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-14">&#182;</a>
+              </div>
+              <p>Guid generation borrowed from
+<a href="http://documentup.com/jeromegn/backbone.localStorage">http://documentup.com/jeromegn/backbone.localStorage</a>
+Generate four random hex digits.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="function"><span class="keyword">function</span> <span class="title">S4</span><span class="params">()</span> {</span>
+    <span class="keyword">return</span> (((<span class="number">1</span>+Math.random())*<span class="number">0x10000</span>)|<span class="number">0</span>).toString(<span class="number">16</span>).substring(<span class="number">1</span>);
+  };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-15">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-15">&#182;</a>
+              </div>
+              <p>Generate a pseudo-GUID by concatenating random hexadecimal.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="function"><span class="keyword">function</span> <span class="title">guid</span><span class="params">()</span> {</span>
+    <span class="keyword">return</span> (S4()+S4()+<span class="string">"-"</span>+S4()+<span class="string">"-"</span>+S4()+<span class="string">"-"</span>+S4()+<span class="string">"-"</span>+S4()+S4()+S4());
+  };
+
+  _.extend(Table.prototype, {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-16">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-16">&#182;</a>
               </div>
               <p>When initializing a table you pass in it&#39;s name and options</p>
 
@@ -204,7 +304,7 @@ var destroyedJohn  = users.destroy(1); // or users.destroy(john)</code></pre>
         dbName: <span class="string">'romantic'</span>
       });
 
-      <span class="keyword">this</span>._setDatabase(options);
+      <span class="keyword">this</span>._setStore(options);
       <span class="keyword">this</span>._setTable(name);
       <span class="keyword">return</span> <span class="keyword">this</span>;
     },</pre></div></div>
@@ -212,30 +312,31 @@ var destroyedJohn  = users.destroy(1); // or users.destroy(john)</code></pre>
         </li>
         
         
-        <li id="section-12">
+        <li id="section-17">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-12">&#182;</a>
+                <a class="pilcrow" href="#section-17">&#182;</a>
               </div>
-              <p>This sets up the database instance inside the object</p>
+              <p>This sets up the store instance inside the object</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    _setDatabase: <span class="function"><span class="keyword">function</span><span class="params">(options)</span> {</span>
-      <span class="keyword">var</span> dbName;
+            <div class="content"><div class='highlight'><pre>    _setStore: <span class="function"><span class="keyword">function</span><span class="params">(options)</span> {</span>
+      <span class="keyword">var</span> dbName, adapter;
       dbName = options.dbName;
-      <span class="keyword">this</span>._database =  store.namespace(dbName);
+
+      <span class="keyword">this</span>._store = <span class="keyword">this</span>.adapter ? <span class="keyword">new</span> <span class="keyword">this</span>.adapter(dbName) : <span class="keyword">new</span> Romantic.LocalStorage(dbName);
     },</pre></div></div>
             
         </li>
         
         
-        <li id="section-13">
+        <li id="section-18">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-13">&#182;</a>
+                <a class="pilcrow" href="#section-18">&#182;</a>
               </div>
               <p>This sets up the table instance and table name inside the object</p>
 
@@ -244,19 +345,19 @@ var destroyedJohn  = users.destroy(1); // or users.destroy(john)</code></pre>
             <div class="content"><div class='highlight'><pre>    _setTable: <span class="function"><span class="keyword">function</span><span class="params">(name)</span> {</span>
       <span class="keyword">if</span>(name) { <span class="keyword">this</span>.tableName = name; }
 
-      <span class="keyword">if</span>(!<span class="keyword">this</span>._database.has(<span class="keyword">this</span>.tableName)) { <span class="keyword">this</span>._database(<span class="keyword">this</span>.tableName, []); }
+      <span class="keyword">if</span>(!_.include(<span class="keyword">this</span>._store.tables(), <span class="keyword">this</span>.tableName)) { <span class="keyword">this</span>._store.set(<span class="keyword">this</span>.tableName, []); }
 
-      <span class="keyword">this</span>._table = <span class="keyword">this</span>._database(<span class="keyword">this</span>.tableName);
+      <span class="keyword">this</span>._table = <span class="keyword">this</span>._store.get(<span class="keyword">this</span>.tableName);
     },</pre></div></div>
             
         </li>
         
         
-        <li id="section-14">
+        <li id="section-19">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-14">&#182;</a>
+                <a class="pilcrow" href="#section-19">&#182;</a>
               </div>
               <p>Takes an optional table parameter(array of objects), this allows you to
 completely replace the database with a new data set.</p>
@@ -270,18 +371,18 @@ carsTable.save(cars);</code></pre>
             
             <div class="content"><div class='highlight'><pre>    save: <span class="function"><span class="keyword">function</span><span class="params">(table)</span> {</span>
       <span class="keyword">if</span>(table == <span class="literal">null</span>) { table = <span class="keyword">this</span>._table; }
-      <span class="keyword">this</span>._database(<span class="keyword">this</span>.tableName, table);
+      <span class="keyword">this</span>._store.set(<span class="keyword">this</span>.tableName, table);
       <span class="keyword">return</span> table;
     },</pre></div></div>
             
         </li>
         
         
-        <li id="section-15">
+        <li id="section-20">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-15">&#182;</a>
+                <a class="pilcrow" href="#section-20">&#182;</a>
               </div>
               <p>Filters data to attributes specified in schema.</p>
 <p>It can be an array of keys:
@@ -319,11 +420,11 @@ validation:
         </li>
         
         
-        <li id="section-16">
+        <li id="section-21">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-16">&#182;</a>
+                <a class="pilcrow" href="#section-21">&#182;</a>
               </div>
               <p>We start with the cid, so it needs to always be allowed</p>
 
@@ -341,11 +442,11 @@ validation:
         </li>
         
         
-        <li id="section-17">
+        <li id="section-22">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-17">&#182;</a>
+                <a class="pilcrow" href="#section-22">&#182;</a>
               </div>
               <p>Accept attribute if the key is &#39;any&#39; or it&#39;s a function and that
 function returns true with the value of the key passed in</p>
@@ -354,9 +455,23 @@ function returns true with the value of the key passed in</p>
             
             <div class="content"><div class='highlight'><pre>            <span class="keyword">if</span>(val === <span class="string">'any'</span> || _.isFunction(val) &amp;&amp; val(data[key])) {
               validKeys.push(key);
-            } <span class="keyword">else</span> {
+            } <span class="keyword">else</span> {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-23">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-23">&#182;</a>
+              </div>
+              <p>TODO: Refactor this to loop over all valid strings and call the
+underscore method based on the string.</p>
 
-              <span class="keyword">switch</span>(val) {
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>              <span class="keyword">switch</span>(val) {
                 <span class="keyword">case</span> <span class="string">'array'</span>:
                   <span class="keyword">if</span>(_.isArray(data[key])) { validKeys.push(key); }
                   <span class="keyword">break</span>;
@@ -394,18 +509,18 @@ function returns true with the value of the key passed in</p>
         </li>
         
         
-        <li id="section-18">
+        <li id="section-24">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-18">&#182;</a>
+                <a class="pilcrow" href="#section-24">&#182;</a>
               </div>
               <p>Takes in an object of attributes and saves it with a unique cid</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>    create: <span class="function"><span class="keyword">function</span><span class="params">(data)</span> {</span>
-      data.cid = _.uniqueId(<span class="string">'c'</span>);
+      data.cid = guid();
 
       <span class="keyword">this</span>._table.push(<span class="keyword">this</span>.filterData(data));
       <span class="keyword">this</span>.save();
@@ -415,11 +530,11 @@ function returns true with the value of the key passed in</p>
         </li>
         
         
-        <li id="section-19">
+        <li id="section-25">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-19">&#182;</a>
+                <a class="pilcrow" href="#section-25">&#182;</a>
               </div>
               <p>Returns all data in the table as an array</p>
 
@@ -434,11 +549,11 @@ function returns true with the value of the key passed in</p>
         </li>
         
         
-        <li id="section-20">
+        <li id="section-26">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-20">&#182;</a>
+                <a class="pilcrow" href="#section-26">&#182;</a>
               </div>
               <p>Accepts either a data object that has an id/cid attribute or just a cid
 or id. If it contains both, the <code>id</code> will take precendence</p>
@@ -456,11 +571,11 @@ or id. If it contains both, the <code>id</code> will take precendence</p>
         </li>
         
         
-        <li id="section-21">
+        <li id="section-27">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-21">&#182;</a>
+                <a class="pilcrow" href="#section-27">&#182;</a>
               </div>
               <p>Purposely using == and not === as to prevent type issues from coming
 up when using localStorage as it could really be stored either way</p>
@@ -476,11 +591,11 @@ up when using localStorage as it could really be stored either way</p>
         </li>
         
         
-        <li id="section-22">
+        <li id="section-28">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-22">&#182;</a>
+                <a class="pilcrow" href="#section-28">&#182;</a>
               </div>
               <p>Accepts a data object with changed values and will update and save the
 data</p>
@@ -501,28 +616,28 @@ data</p>
         </li>
         
         
-        <li id="section-23">
+        <li id="section-29">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-23">&#182;</a>
+                <a class="pilcrow" href="#section-29">&#182;</a>
               </div>
               <p>This destroys all data in the table and saves it</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>    destroyAll: <span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
-      <span class="keyword">this</span>._database.remove(<span class="keyword">this</span>.tableName);
+      <span class="keyword">this</span>._store.destroyAll(<span class="keyword">this</span>.tableName);
     },</pre></div></div>
             
         </li>
         
         
-        <li id="section-24">
+        <li id="section-30">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-24">&#182;</a>
+                <a class="pilcrow" href="#section-30">&#182;</a>
               </div>
               <p>Takes an Object or Id/Cid and finds it in the table and destroys it</p>
 
@@ -541,11 +656,11 @@ data</p>
         </li>
         
         
-        <li id="section-25">
+        <li id="section-31">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-25">&#182;</a>
+                <a class="pilcrow" href="#section-31">&#182;</a>
               </div>
               <p>Code Borrowed From Backbone
 <a href="http://backbonejs.org">http://backbonejs.org</a></p>
@@ -562,11 +677,11 @@ data</p>
         </li>
         
         
-        <li id="section-26">
+        <li id="section-32">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-26">&#182;</a>
+                <a class="pilcrow" href="#section-32">&#182;</a>
               </div>
               <p>Mix in each Underscore method as a proxy to <code>Table#_table</code>.</p>
 
@@ -583,11 +698,11 @@ data</p>
         </li>
         
         
-        <li id="section-27">
+        <li id="section-33">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-27">&#182;</a>
+                <a class="pilcrow" href="#section-33">&#182;</a>
               </div>
               <p>Underscore methods that take a property name as an argument.</p>
 
@@ -598,11 +713,11 @@ data</p>
         </li>
         
         
-        <li id="section-28">
+        <li id="section-34">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-28">&#182;</a>
+                <a class="pilcrow" href="#section-34">&#182;</a>
               </div>
               <p>Use attributes instead of properties.</p>
 
@@ -624,11 +739,11 @@ data</p>
         </li>
         
         
-        <li id="section-29">
+        <li id="section-35">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-29">&#182;</a>
+                <a class="pilcrow" href="#section-35">&#182;</a>
               </div>
               <p>The constructor function for the new subclass is either defined by you
 (the &quot;constructor&quot; property in your <code>extend</code> definition), or defaulted
@@ -645,11 +760,11 @@ by us to simply call the parent&#39;s constructor.</p>
         </li>
         
         
-        <li id="section-30">
+        <li id="section-36">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-30">&#182;</a>
+                <a class="pilcrow" href="#section-36">&#182;</a>
               </div>
               <p>Add static properties to the constructor function, if supplied.</p>
 
@@ -660,11 +775,11 @@ by us to simply call the parent&#39;s constructor.</p>
         </li>
         
         
-        <li id="section-31">
+        <li id="section-37">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-31">&#182;</a>
+                <a class="pilcrow" href="#section-37">&#182;</a>
               </div>
               <p>Set the prototype chain to inherit from <code>parent</code>, without calling
 <code>parent</code>&#39;s constructor function.</p>
@@ -678,11 +793,11 @@ by us to simply call the parent&#39;s constructor.</p>
         </li>
         
         
-        <li id="section-32">
+        <li id="section-38">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-32">&#182;</a>
+                <a class="pilcrow" href="#section-38">&#182;</a>
               </div>
               <p>Add prototype properties (instance properties) to the subclass,
 if supplied.</p>
@@ -694,11 +809,11 @@ if supplied.</p>
         </li>
         
         
-        <li id="section-33">
+        <li id="section-39">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-33">&#182;</a>
+                <a class="pilcrow" href="#section-39">&#182;</a>
               </div>
               <p>Set a convenience property in case the parent&#39;s prototype is needed
 later.</p>
@@ -713,11 +828,11 @@ later.</p>
         </li>
         
         
-        <li id="section-34">
+        <li id="section-40">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-34">&#182;</a>
+                <a class="pilcrow" href="#section-40">&#182;</a>
               </div>
               <p>Set up inheritance for the Table</p>
 <p>End of Code Borrowed From Backbone

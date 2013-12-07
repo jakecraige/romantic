@@ -48,6 +48,38 @@
 
   Romantic.VERSION = '0.0.1';
 
+  // LocalStorage Adapter Constructor
+  // -------------------------------
+
+  var LocalStorage = Romantic.LocalStorage = function() {
+    this.initialize.apply(this, arguments);
+  };
+
+  // LocalStorage Adapter Methods
+  // ------------------------------
+
+  _.extend(LocalStorage.prototype, {
+    initialize: function(dbName) {
+      this.setupDatabase(dbName);
+      return this;
+    },
+    setupDatabase: function(dbName) {
+      this.database = store.namespace(dbName);
+    },
+    set: function(tableName, data) {
+      return this.database(tableName, data);
+    },
+    get: function(tableName) {
+      return this.database(tableName)
+    },
+    tables: function(tableName) {
+      return this.database.keys();
+    },
+    destroyAll: function(tableName) {
+      return this.database.remove(tableName);
+    }
+  });
+
   // Table Constructor
   // ------------------
 
@@ -57,6 +89,19 @@
 
   // Table Methods
   // ------------------
+
+
+  // Guid generation borrowed from
+  // http://documentup.com/jeromegn/backbone.localStorage
+  // Generate four random hex digits.
+  function S4() {
+    return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
+  };
+
+  // Generate a pseudo-GUID by concatenating random hexadecimal.
+  function guid() {
+    return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
+  };
 
   _.extend(Table.prototype, {
 
@@ -68,25 +113,26 @@
         dbName: 'romantic'
       });
 
-      this._setDatabase(options);
+      this._setStore(options);
       this._setTable(name);
       return this;
     },
 
-    // This sets up the database instance inside the object
-    _setDatabase: function(options) {
-      var dbName;
+    // This sets up the store instance inside the object
+    _setStore: function(options) {
+      var dbName, adapter;
       dbName = options.dbName;
-      this._database =  store.namespace(dbName);
+
+      this._store = this.adapter ? new this.adapter(dbName) : new Romantic.LocalStorage(dbName);
     },
 
     // This sets up the table instance and table name inside the object
     _setTable: function(name) {
       if(name) { this.tableName = name; }
 
-      if(!this._database.has(this.tableName)) { this._database(this.tableName, []); }
+      if(!_.include(this._store.tables(), this.tableName)) { this._store.set(this.tableName, []); }
 
-      this._table = this._database(this.tableName);
+      this._table = this._store.get(this.tableName);
     },
 
     // Takes an optional table parameter(array of objects), this allows you to
@@ -101,7 +147,7 @@
     //     carsTable.save(cars);
     save: function(table) {
       if(table == null) { table = this._table; }
-      this._database(this.tableName, table);
+      this._store.set(this.tableName, table);
       return table;
     },
 
@@ -152,6 +198,8 @@
               validKeys.push(key);
             } else {
 
+              // TODO: Refactor this to loop over all valid strings and call the
+              // underscore method based on the string.
               switch(val) {
                 case 'array':
                   if(_.isArray(data[key])) { validKeys.push(key); }
@@ -189,7 +237,7 @@
 
     // Takes in an object of attributes and saves it with a unique cid
     create: function(data) {
-      data.cid = _.uniqueId('c');
+      data.cid = guid();
 
       this._table.push(this.filterData(data));
       this.save();
@@ -236,7 +284,7 @@
 
     // This destroys all data in the table and saves it
     destroyAll: function() {
-      this._database.remove(this.tableName);
+      this._store.destroyAll(this.tableName);
     },
 
     // Takes an Object or Id/Cid and finds it in the table and destroys it
