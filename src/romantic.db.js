@@ -1,9 +1,29 @@
-// by Jake Craige 2013
-// ---------------------------------
+// RomanticDB.js
+// ----------------------------------
+// v0.0.1
+//
+// Copyright (c)2013 Jake Craige
+// Distributed under MIT license
+//
+// http://jcraige.com
+// --------------------
 //
 // *TODO:*
-// +   Set up locator functions to accept an array
+// +   Set up query functions to accept an array
 //
+// Description:
+// --------------------
+// Todo
+//
+// Usage Example:
+// --------------------
+//
+//     var users          = new Romantic.Table('users', {dbName: 'apple'});
+//     var john           = users.create({ id: 1, firstName: 'John', lastName: 'Doe' });
+//     var foundJohn      = users.find(1); // or users.find(john)
+//     john.firstName     = 'Jane';
+//     john               = users.update(john);
+//     var destroyedJohn  = users.destroy(1); // or users.destroy(john)
 
 (function(root, factory) {
 
@@ -16,11 +36,18 @@
 
   Romantic.VERSION = '0.0.1';
 
+  // Table Constructor
+  // ------------------
+
   var Table = Romantic.Table = function(name, options) {
     this.initialize.apply(this, arguments);
   };
 
+  // Table Methods
+  // ------------------
+
   _.extend(Table.prototype, {
+    // When initializing a table you pass in it's name and options
     initialize: function(name, options) {
       options || (options = {});
 
@@ -32,17 +59,13 @@
       this._setTable(name);
       return this;
     },
+    // This sets up the databse instance inside the object
     _setDatabase: function(options) {
       var dbName;
-      console.log(this);
-      if(options.dbName) {
-        dbName = options.dbName;
-      } else {
-        dbName = 'kaf'
-      }
-
+      dbName = options.dbName;
       this._database =  store.namespace(dbName);
     },
+    // This sets up the table instance and table name inside the object
     _setTable: function(name) {
       this._tableName = name;
 
@@ -50,20 +73,37 @@
 
       this._table = this._database(name);
     },
+    // Takes an optional table parameter(array of objects), this allows you to
+    // completely replace the database with a new data set.
+    //
+    // It is used internally after the create, update, destroy functions
+    //
+    // Ex:
+    //
+    //   var cars = [{make: 'Chevrolet', cid: 1}, {make: 'Dodge', cid: 2}];
+    //   var carsTable = new Romantic.DB.Table('cars');
+    //   carsTable.save(cars);
     save: function(table) {
       if(table == null) { table = this._table; }
       this._database(this._tableName, table);
       return table;
     },
+
+    // Takes in an object of attributes and saves it with a unique cid
     create: function(data) {
       data.cid = _.uniqueId('c');
       this._table.push(data);
       this.save();
       return data;
     },
+
+    // Returns all data in the table as an array
     all: function() {
       return this._table;
     },
+
+    // Accepts either a data object that has an id/cid attribute or just a cid
+    // or id. If it contains both, the `id` will take precendence
     find: function(data) {
       var id;
       id = data;
@@ -79,6 +119,9 @@
       });
       return match;
     },
+
+    // Accepts a data object with changed values and will update and save the
+    // data
     update: function(data) {
       var row, index;
       row   = this.find(data);
@@ -89,9 +132,13 @@
       this.save();
       return row;
     },
+
+    // This destroys all data in the table and saves it
     destroyAll: function() {
       this._database.remove(this.tableName);
     },
+
+    // Takes an Object or Id/Cid and finds it in the table and destroys it
     destroy: function(data) {
       var row;
       row = this.find(data);
@@ -102,7 +149,9 @@
 
   });
 
-  // Backbone, wooo!
+  // Code Borrowed From Backbone
+  // http://backbonejs.org
+
   var methods = ['forEach', 'each', 'map', 'collect', 'reduce', 'foldl',
     'inject', 'reduceRight', 'foldr', ,'detect', 'filter', 'select',
     'reject', 'every', 'some', 'any', 'include', 'contains', 'invoke',
@@ -132,7 +181,6 @@
     };
   });
 
-  // Thanks Backbone!
   var extend = function(protoProps, staticProps) {
     var parent = this;
     var child;
@@ -166,7 +214,10 @@
     return child;
   };
 
-  // Set up inheritance for the model, collection, router, view and history.
+  // Set up inheritance for the Table
+  //
+  // End of Code Borrowed From Backbone
+  // http://backbonejs.org
   Table.extend = extend;
 
   return Romantic;
