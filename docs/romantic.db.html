@@ -241,11 +241,11 @@ var destroyedJohn  = users.destroy(1); // or users.destroy(john)</code></pre>
             </div>
             
             <div class="content"><div class='highlight'><pre>    _setTable: <span class="function"><span class="keyword">function</span><span class="params">(name)</span> {</span>
-      <span class="keyword">this</span>._tableName = name;
+      <span class="keyword">if</span>(name) { <span class="keyword">this</span>.tableName = name; }
 
-      <span class="keyword">if</span>(!<span class="keyword">this</span>._database.has(name)) { <span class="keyword">this</span>._database(name, []); }
+      <span class="keyword">if</span>(!<span class="keyword">this</span>._database.has(<span class="keyword">this</span>.tableName)) { <span class="keyword">this</span>._database(<span class="keyword">this</span>.tableName, []); }
 
-      <span class="keyword">this</span>._table = <span class="keyword">this</span>._database(name);
+      <span class="keyword">this</span>._table = <span class="keyword">this</span>._database(<span class="keyword">this</span>.tableName);
     },</pre></div></div>
             
         </li>
@@ -269,7 +269,7 @@ carsTable.save(cars);</code></pre>
             
             <div class="content"><div class='highlight'><pre>    save: <span class="function"><span class="keyword">function</span><span class="params">(table)</span> {</span>
       <span class="keyword">if</span>(table == <span class="literal">null</span>) { table = <span class="keyword">this</span>._table; }
-      <span class="keyword">this</span>._database(<span class="keyword">this</span>._tableName, table);
+      <span class="keyword">this</span>._database(<span class="keyword">this</span>.tableName, table);
       <span class="keyword">return</span> table;
     },</pre></div></div>
             
@@ -282,16 +282,12 @@ carsTable.save(cars);</code></pre>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-15">&#182;</a>
               </div>
-              <p>Takes in an object of attributes and saves it with a unique cid</p>
+              <p>Filters data to attributes specified in schema.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    create: <span class="function"><span class="keyword">function</span><span class="params">(data)</span> {</span>
-      data.cid = _.uniqueId(<span class="string">'c'</span>);
-      <span class="keyword">this</span>._table.push(data);
-      <span class="keyword">this</span>.save();
-      <span class="keyword">return</span> data;
-    },</pre></div></div>
+            <div class="content"><div class='highlight'><pre>    filterData: <span class="function"><span class="keyword">function</span><span class="params">(data)</span> {</span>
+      <span class="keyword">if</span>(<span class="keyword">this</span>.schema) {</pre></div></div>
             
         </li>
         
@@ -302,12 +298,14 @@ carsTable.save(cars);</code></pre>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-16">&#182;</a>
               </div>
-              <p>Returns all data in the table as an array</p>
+              <p>We add the cid, so it needs to always be allowed</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    all: <span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
-      <span class="keyword">return</span> <span class="keyword">this</span>._table;
+            <div class="content"><div class='highlight'><pre>        <span class="keyword">this</span>.schema.push(<span class="string">'cid'</span>);
+        <span class="keyword">return</span> _.pick(data, <span class="keyword">this</span>.schema);
+      }
+      <span class="keyword">return</span> data;
     },</pre></div></div>
             
         </li>
@@ -318,6 +316,46 @@ carsTable.save(cars);</code></pre>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-17">&#182;</a>
+              </div>
+              <p>Takes in an object of attributes and saves it with a unique cid</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    create: <span class="function"><span class="keyword">function</span><span class="params">(data)</span> {</span>
+      data.cid = _.uniqueId(<span class="string">'c'</span>);
+
+      <span class="keyword">this</span>._table.push(<span class="keyword">this</span>.filterData(data));
+      <span class="keyword">this</span>.save();
+      <span class="keyword">return</span> data;
+    },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-18">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-18">&#182;</a>
+              </div>
+              <p>Returns all data in the table as an array</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    all: <span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
+      <span class="keyword">return</span> _.map(<span class="keyword">this</span>._table, <span class="function"><span class="keyword">function</span><span class="params">(row)</span> {</span>
+        <span class="keyword">return</span> <span class="keyword">this</span>.filterData(row);
+      }, <span class="keyword">this</span>);
+    },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-19">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-19">&#182;</a>
               </div>
               <p>Accepts either a data object that has an id/cid attribute or just a cid
 or id. If it contains both, the <code>id</code> will take precendence</p>
@@ -335,11 +373,11 @@ or id. If it contains both, the <code>id</code> will take precendence</p>
         </li>
         
         
-        <li id="section-18">
+        <li id="section-20">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-18">&#182;</a>
+                <a class="pilcrow" href="#section-20">&#182;</a>
               </div>
               <p>Purposely using == and not === as to prevent type issues from coming
 up when using localStorage as it could really be stored either way</p>
@@ -355,11 +393,11 @@ up when using localStorage as it could really be stored either way</p>
         </li>
         
         
-        <li id="section-19">
+        <li id="section-21">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-19">&#182;</a>
+                <a class="pilcrow" href="#section-21">&#182;</a>
               </div>
               <p>Accepts a data object with changed values and will update and save the
 data</p>
@@ -372,7 +410,7 @@ data</p>
       index = _.indexOf(<span class="keyword">this</span>._table, row);
 
       <span class="keyword">if</span>(!row) { <span class="keyword">return</span> <span class="literal">false</span>; }
-      <span class="keyword">this</span>._table[index] = _.extend(row, data);
+      <span class="keyword">this</span>._table[index] = <span class="keyword">this</span>.filterData(_.extend(row, data));
       <span class="keyword">this</span>.save();
       <span class="keyword">return</span> row;
     },</pre></div></div>
@@ -380,11 +418,11 @@ data</p>
         </li>
         
         
-        <li id="section-20">
+        <li id="section-22">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-20">&#182;</a>
+                <a class="pilcrow" href="#section-22">&#182;</a>
               </div>
               <p>This destroys all data in the table and saves it</p>
 
@@ -397,11 +435,11 @@ data</p>
         </li>
         
         
-        <li id="section-21">
+        <li id="section-23">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-21">&#182;</a>
+                <a class="pilcrow" href="#section-23">&#182;</a>
               </div>
               <p>Takes an Object or Id/Cid and finds it in the table and destroys it</p>
 
@@ -420,11 +458,11 @@ data</p>
         </li>
         
         
-        <li id="section-22">
+        <li id="section-24">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-22">&#182;</a>
+                <a class="pilcrow" href="#section-24">&#182;</a>
               </div>
               <p>Code Borrowed From Backbone
 <a href="http://backbonejs.org">http://backbonejs.org</a></p>
@@ -441,11 +479,11 @@ data</p>
         </li>
         
         
-        <li id="section-23">
+        <li id="section-25">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-23">&#182;</a>
+                <a class="pilcrow" href="#section-25">&#182;</a>
               </div>
               <p>Mix in each Underscore method as a proxy to <code>Table#_table</code>.</p>
 
@@ -462,11 +500,11 @@ data</p>
         </li>
         
         
-        <li id="section-24">
+        <li id="section-26">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-24">&#182;</a>
+                <a class="pilcrow" href="#section-26">&#182;</a>
               </div>
               <p>Underscore methods that take a property name as an argument.</p>
 
@@ -477,11 +515,11 @@ data</p>
         </li>
         
         
-        <li id="section-25">
+        <li id="section-27">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-25">&#182;</a>
+                <a class="pilcrow" href="#section-27">&#182;</a>
               </div>
               <p>Use attributes instead of properties.</p>
 
@@ -503,11 +541,11 @@ data</p>
         </li>
         
         
-        <li id="section-26">
+        <li id="section-28">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-26">&#182;</a>
+                <a class="pilcrow" href="#section-28">&#182;</a>
               </div>
               <p>The constructor function for the new subclass is either defined by you
 (the &quot;constructor&quot; property in your <code>extend</code> definition), or defaulted
@@ -524,11 +562,11 @@ by us to simply call the parent&#39;s constructor.</p>
         </li>
         
         
-        <li id="section-27">
+        <li id="section-29">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-27">&#182;</a>
+                <a class="pilcrow" href="#section-29">&#182;</a>
               </div>
               <p>Add static properties to the constructor function, if supplied.</p>
 
@@ -539,11 +577,11 @@ by us to simply call the parent&#39;s constructor.</p>
         </li>
         
         
-        <li id="section-28">
+        <li id="section-30">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-28">&#182;</a>
+                <a class="pilcrow" href="#section-30">&#182;</a>
               </div>
               <p>Set the prototype chain to inherit from <code>parent</code>, without calling
 <code>parent</code>&#39;s constructor function.</p>
@@ -557,11 +595,11 @@ by us to simply call the parent&#39;s constructor.</p>
         </li>
         
         
-        <li id="section-29">
+        <li id="section-31">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-29">&#182;</a>
+                <a class="pilcrow" href="#section-31">&#182;</a>
               </div>
               <p>Add prototype properties (instance properties) to the subclass,
 if supplied.</p>
@@ -573,11 +611,11 @@ if supplied.</p>
         </li>
         
         
-        <li id="section-30">
+        <li id="section-32">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-30">&#182;</a>
+                <a class="pilcrow" href="#section-32">&#182;</a>
               </div>
               <p>Set a convenience property in case the parent&#39;s prototype is needed
 later.</p>
@@ -592,11 +630,11 @@ later.</p>
         </li>
         
         
-        <li id="section-31">
+        <li id="section-33">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-31">&#182;</a>
+                <a class="pilcrow" href="#section-33">&#182;</a>
               </div>
               <p>Set up inheritance for the Table</p>
 <p>End of Code Borrowed From Backbone

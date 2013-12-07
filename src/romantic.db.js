@@ -81,11 +81,11 @@
 
     // This sets up the table instance and table name inside the object
     _setTable: function(name) {
-      this._tableName = name;
+      if(name) { this.tableName = name; }
 
-      if(!this._database.has(name)) { this._database(name, []); }
+      if(!this._database.has(this.tableName)) { this._database(this.tableName, []); }
 
-      this._table = this._database(name);
+      this._table = this._database(this.tableName);
     },
 
     // Takes an optional table parameter(array of objects), this allows you to
@@ -100,21 +100,34 @@
     //     carsTable.save(cars);
     save: function(table) {
       if(table == null) { table = this._table; }
-      this._database(this._tableName, table);
+      this._database(this.tableName, table);
       return table;
+    },
+
+    // Filters data to attributes specified in schema.
+    filterData: function(data) {
+      if(this.schema) {
+        // We add the cid, so it needs to always be allowed
+        this.schema.push('cid');
+        return _.pick(data, this.schema);
+      }
+      return data;
     },
 
     // Takes in an object of attributes and saves it with a unique cid
     create: function(data) {
       data.cid = _.uniqueId('c');
-      this._table.push(data);
+
+      this._table.push(this.filterData(data));
       this.save();
       return data;
     },
 
     // Returns all data in the table as an array
     all: function() {
-      return this._table;
+      return _.map(this._table, function(row) {
+        return this.filterData(row);
+      }, this);
     },
 
     // Accepts either a data object that has an id/cid attribute or just a cid
@@ -143,7 +156,7 @@
       index = _.indexOf(this._table, row);
 
       if(!row) { return false; }
-      this._table[index] = _.extend(row, data);
+      this._table[index] = this.filterData(_.extend(row, data));
       this.save();
       return row;
     },

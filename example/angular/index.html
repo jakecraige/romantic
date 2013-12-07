@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html ng-app="UsersApp">
+<head>
+  <title>Romantic DB</title>
+
+  <script src="vendor/angular.js"></script>
+  <script src="vendor/underscore.js"></script>
+  <script src="vendor/store2.js"></script>
+  <script src="../../src/romantic.db.js"></script>
+
+  <script src="js/models/user_model.js"></script>
+  <script src="js/controllers/users_controller.js"></script>
+
+</head>
+<body ng-controller="UsersCtrl">
+  <h1>Users: Romantic DB</h1>
+  <form ng-submit="create(newUser)">
+    <h3>Create a user</h3>
+    <label for="firstName">First Name</label>
+    <input type="text" ng-model="newUser.firstName" id="firstName" required />
+    <label for="lastName">Last Name</label>
+    <input type="text" ng-model="newUser.lastName" id="lastName" />
+    <button type="submit">Create!</button>
+  </form>
+  <h3>Manage Users</h3>
+  <table>
+    <tr>
+      <th>First Name</th>
+      <th>Last Name</th>
+    </tr>
+    <tr ng-repeat="user in users track by $index">
+      <td>
+        <input ng-show="$index == 0" type="text" ng-model="user.firstName">
+        <span ng-hide="$index == 0">{{user.firstName}}</span>
+      </td>
+      <td>
+        <input ng-show="$index == 0" type="text" ng-model="user.lastName">
+        <span ng-hide="$index == 0">{{user.lastName}}</span>
+      </td>
+      <td>
+        <button ng-click="update(user)" ng-show="$index == 0">Update</button>
+        <button ng-click="destroy(user)">Remove!</button>
+      </td>
+    </tr>
+  </table>
+  <pre>
+    {{ users | json }}
+  </pre>
+</body>
+</html>
