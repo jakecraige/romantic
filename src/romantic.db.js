@@ -323,10 +323,7 @@
 
         // Returns new object with only the keys from validKeys pulled out
         return _.pick(data, validKeys);
-
-        } else {
-          throw new Error('Invalid schema entered');
-        }
+      }
       return data;
     },
 
