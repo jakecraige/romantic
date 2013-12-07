@@ -11,7 +11,6 @@
 // +  Set up query functions to accept an array
 // +  Remove store2 dependency
 //
-//
 // Description:
 // --------------------
 // Library for managing client side data in web and mobile applications.
@@ -86,7 +85,7 @@
       return this;
     },
     setupDatabase: function(dbName) {
-      this.database = store.namespace(dbName);
+      this.database = new Romantic.LocalStorage.DB(dbName);
     },
     setupTable: function(tableName) {
       this.tableName = tableName;
@@ -94,7 +93,7 @@
       if(!_.include(this.tables(), this.tableName)) {
         this.setTable([]);
       } else {
-        this.table = this.database(this.tableName);
+        this.table = this.database.get(this.tableName);
       }
     },
 
@@ -110,11 +109,11 @@
     },
     // Returns a list of all the tables in the database
     tables: function(tableName) {
-      return this.database.keys();
+      return this.database.tables();
     },
     // Removes the table completely from the database
     destroyAll: function() {
-      return this.database.remove(this.tableName);
+      return this.database.destroy(this.tableName);
     },
     // Returns the table, an array of objects
     all: function() {
@@ -168,6 +167,43 @@
       return row;
     }
   });
+
+
+  // DB Constructor
+  // -------------------------------
+
+  var DB = Romantic.LocalStorage.DB = function() {
+    this.initialize.apply(this, arguments);
+  };
+
+  // DB Methods
+  // ------------------------------
+
+  _.extend(DB.prototype, {
+    initialize: function(dbName) {
+      this._database = store.namespace(dbName);
+      return this;
+    },
+    all: function() {
+      return this._database.getAll();
+    },
+    tables: function() {
+      return _.keys(this.all());
+    },
+    get: function(tableName) {
+      return this._database.get(tableName);
+    },
+    set: function(tableName, data) {
+      this._database.set(tableName, data);
+      return this.get(tableName);
+    },
+    destroy: function(tableName) {
+      return this._database.remove(tableName);
+    }
+
+  });
+
+
 
   // Table Constructor
   // ------------------
@@ -317,7 +353,6 @@
     // data
     update: function(data) {
       data = this.filterData(data);
-      console.log('filter', data);
       return this._store.update(data);
     },
 
@@ -402,7 +437,7 @@
 
   // End of Code Borrowed From Backbone
   // http://backbonejs.org
-  Table.extend = extend;
+  DB.extend = LocalStorage.extend = Table.extend = extend;
 
   return Romantic;
 }));
