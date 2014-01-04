@@ -5,12 +5,13 @@ var UserModel = angular.module('UserModel', [])
      tableName: 'users',
 
      schema: {
-       'firstName': function(name) {
-         if(name === 'Jake') {
+       firstName: '',
+       lastName: 'string',
+       age: function(age) {
+         if(age > 0) {
            return true;
          }
        },
-       'lastName': 'string'
      }
    });
 

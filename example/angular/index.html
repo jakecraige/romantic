@@ -20,6 +20,8 @@
     <input type="text" ng-model="newUser.firstName" id="firstName" required />
     <label for="lastName">Last Name</label>
     <input type="text" ng-model="newUser.lastName" id="lastName" />
+    <label for="lastName">Age</label>
+    <input type="number" ng-model="newUser.age" id="age" />
     <button type="submit">Create!</button>
   </form>
   <h3>Manage Users</h3>
@@ -28,17 +30,18 @@
       <th>First Name</th>
       <th>Last Name</th>
     </tr>
-    <tr ng-repeat="user in users track by $index">
+    <tr ng-repeat="user in users track by $index" ng-controller="UserCtrl">
       <td>
-        <input ng-show="$index == 0" type="text" ng-model="user.firstName">
-        <span ng-hide="$index == 0">{{user.firstName}}</span>
+        <input type="text" ng-model="user.firstName">
       </td>
       <td>
-        <input ng-show="$index == 0" type="text" ng-model="user.lastName">
-        <span ng-hide="$index == 0">{{user.lastName}}</span>
+        <input type="text" ng-model="user.lastName">
       </td>
       <td>
-        <button ng-click="update(user)" ng-show="$index == 0">Update</button>
+        <input type="number" ng-model="user.age">
+      </td>
+      <td>
+        <button ng-click="update(user)">Update</button>
         <button ng-click="destroy(user)">Remove!</button>
       </td>
     </tr>

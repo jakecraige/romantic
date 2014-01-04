@@ -1,26 +1,30 @@
-var UsersApp = angular.module('UsersApp', ['UserModel'])
- .controller('UsersCtrl', ['$scope', 'User', function($scope, User) {
+var UsersApp = angular.module('UsersApp', ['UserModel']);
 
-   // Set users inside of a function so we can call it later to reload them
-   var setUsers = function() {
+UsersApp.controller('UsersCtrl', ['$scope', 'User', function($scope, User) {
+
+  // Refresh users on the scope, Execute on controller load
+  // This is called after changing data to reload the data so the template will
+  // update
+  ($scope.refreshUsers = function() {
     $scope.users = User.all();
-   };
-   setUsers();
+  })();
 
-   $scope.create = function(user) {
-     User.create(user);
-     $scope.newUser = {}; // Clear out the input fields
-     setUsers(); // We need to reload them so everything updates
-   };
+  $scope.create = function(user) {
+    User.create(user);
+    $scope.newUser = {}; // Clear out the input fields
+    $scope.refreshUsers();
+  };
 
-   $scope.update = function(user) {
-     User.update(user); // Clear out input fields
-     setUsers(); // We need to reload them so everything updates
-   };
+}]);
 
-   $scope.destroy = function(user) {
-     User.destroy(user);
-     $scope.newUser = {}; // Clear out input fields
-     setUsers(); // We need to reload them so everything updates
-   };
- }]);
+UsersApp.controller('UserCtrl', ['$scope', 'User', function($scope, User) {
+  $scope.update = function(user) {
+    User.update(user);
+    $scope.refreshUsers();
+  };
+
+  $scope.destroy = function(user) {
+    User.destroy(user);
+    $scope.refreshUsers();
+  };
+}]);

@@ -9,15 +9,15 @@
 //
 // *TODO:*
 // +  Set up query functions to accept an array
-// +  Remove store2 dependency
+// +  Remove store2 dependency in LocalStorageAdapter
+// +  Relationships
 //
 // Description:
 // --------------------
 // Library for managing client side data in web and mobile applications.
 //
-// It treats the browser localStorage like a database and provides and interface
+// It comes with a localStorage adapter that treats localStorage database and provides and interface
 // for managing and querying the data.
-//
 //
 // Dependencies:
 // ------------------
@@ -45,6 +45,12 @@
   var array = [];
 
   Romantic.VERSION = '0.0.1';
+
+  Romantic.String = {
+    capitalize: function(str) {
+      return str.substr(0,1).toUpperCase() + str.substr(1);
+    }
+  };
 
   // LocalStorage Adapter Constructor
   // -------------------------------
@@ -119,8 +125,9 @@
     all: function() {
       return this.table;
     },
-    // WHen passed in an object/string/num it will pull out the id or cid and
-    // find that in the table
+    // When passed in an object/string/num it will pull out the id or cid and
+    // find that in the table and return the found object, the id will always
+    // take precedence
     find: function(data) {
       var _this, id, cid, match;
       id = data;
@@ -155,15 +162,18 @@
       }
       return match;
     },
-    // Pass in an object that will be given a unique id, pushed onto the table,
+    // Pass in an object that will be given a unique cid, pushed onto the table,
     // and saved
+    // Returns the new object
     create: function(data) {
       var table;
       data.cid = guid();
       this.table.push(data);
       this.save();
+      return data;
     },
     // Pass in an object that will be updated and saved
+    // Returns the modified object
     update: function(data) {
       var row, index;
       row   = this.find(data);
@@ -177,6 +187,7 @@
       return row;
     },
     // Pass in an object/id that will be destroyed and saved on the table
+    // Returns the deleted row
     destroy: function(data) {
       var row;
       row = this.find(data);
@@ -279,7 +290,7 @@
       console.log(this._store.table);
     },
 
-    // Filters data to attributes specified in schema.
+    // Filters data to attributes specified in table `schema`.
     //
     // It can be an array of keys:
     //     ['firstName', 'lastName']
@@ -313,25 +324,32 @@
         // We start with the cid, so it needs to always be allowed
         validKeys = ['cid'];
 
+        // The schema is only an array of keys, no validations will be done
         if(_.isArray(this.schema)) {
           // Add each value in the array as a valid key
           _.each(this.schema, function(column){
             validKeys.push(column);
           });
 
+          // Schema is an object so we will need to specify validations
         } else if(_.isObject(this.schema)) {
 
           _.each(this.schema, function(val, key) {
-            // Accept attribute if the key is 'any' or it's a function and that
-            // function returns true with the value of the key passed in
-            if(val === 'any' || _.isFunction(val) && val(data[key])) {
+            // Accept any attribute if the value is ''
+            // or
+            // Accept attribute if value is a function that returns true when
+            // given the attributes value in this object
+            //
+            // TODO: Would it be better to use if/elseif here for some
+            // reason? Instead of the ||
+            if(val === '' || _.isFunction(val) && val(data[key])) {
               validKeys.push(key);
             } else {
               // Loop through accepted types and use underscores method to
               // verify that it is one of those types
               acceptedTypes = ['array', 'object', 'string', 'number', 'boolean', 'date'];
               _.each(acceptedTypes, function(type) {
-                if(val === type && _['is'+type.capitalize()](data[key])) {
+                if(val === type && _['is'+Romantic.String.capitalize(type)](data[key])) {
                   validKeys.push(key);
                 }
               });
@@ -347,38 +365,37 @@
       return data;
     },
 
-    // Takes in an object of attributes and saves it with a unique cid
+    // Defers to current store's `create`
     create: function(data) {
       this._store.create(this.filterData(data));
       return this._store.find(data);
     },
 
-    // Returns all data in the table as an array
+    // Gets all data from current store via `all` and filters it and returns an
+    // array of that data
     all: function() {
       return _.map(this._store.all(), function(row) {
         return this.filterData(row);
       }, this);
     },
 
-    // Accepts either a data object that has an id/cid attribute or just a cid
-    // or id. If it contains both, the `id` will take precendence
+    // Defers to the current store's `find`
     find: function(data) {
       return this._store.find(data);
     },
 
-    // Accepts a data object with modified values and will update and save the
-    // data
+    // Filters data via schema and defers to current store's `update`
     update: function(data) {
       data = this.filterData(data);
       return this._store.update(data);
     },
 
-    // This destroys all data in the table and saves it
+    // Defers to the current store's `deferAll`
     destroyAll: function() {
       return this._store.destroyAll();
     },
 
-    // Takes an Object or Id/Cid and finds it in the table and destroys it
+    // Defers to current store's `create`
     destroy: function(data) {
       return this._store.destroy(data);
     }
@@ -458,7 +475,3 @@
 
   return Romantic;
 }));
-
-String.prototype.capitalize = function() {
-  return this.substr(0,1).toUpperCase() + this.substr(1);
-};
