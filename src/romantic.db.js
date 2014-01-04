@@ -122,18 +122,37 @@
     // WHen passed in an object/string/num it will pull out the id or cid and
     // find that in the table
     find: function(data) {
-      var id;
+      var _this, id, cid, match;
       id = data;
 
       if(data instanceof Object) {
-        id = data.id || data.cid;
+        id = data.id;
+        cid = data.cid;
       }
 
-      // Purposely using == and not === as to prevent type issues from coming
-      // up when using localStorage as it could really be stored either way
-      match = _.find(this.table, function(row){
-        return row.id == id || row.cid == id
-      });
+      // Used to find matches in the table. Purposely using lazy == so that
+      // there aren't issues with an id being a string like "123" and not
+      // matching 123
+      _this = this;
+      lazyFindMatch = function(key, val) {
+        return _.find(_this.table, function(row){
+          if(row[key] == val) {
+            return true;
+          }
+        });
+      };
+
+      // Loop through table to find the first match. It starts by trying to find
+      // one by id and if it can't, it falls back to looking by cid
+      match = lazyFindMatch('id', id);
+      if(!match) {
+        if(cid) {
+          match = lazyFindMatch('cid', cid);
+        }
+        if (!match) {
+          match =  lazyFindMatch('cid', id);
+        }
+      }
       return match;
     },
     // Pass in an object that will be given a unique id, pushed onto the table,
@@ -217,7 +236,8 @@
 
   _.extend(Table.prototype, {
 
-    // When initializing a table you pass in it's name and options
+    // When initializing a table you pass in it's name and options. If you
+    // create another adapter you can pass in an adapter to the options hash
     initialize: function(tableName, options) {
       options || (options = {});
 
@@ -442,6 +462,3 @@
 String.prototype.capitalize = function() {
   return this.substr(0,1).toUpperCase() + this.substr(1);
 };
-
-
-
