@@ -113,8 +113,14 @@
       return this.setTable(newTable);
     },
     setTable: function(data) {
-      this.database.set(this.tableName, data);
-      this.table = this.database.get(this.tableName);
+      if(data) {
+        this.database.set(this.tableName, data);
+        this.table = this.database.get(this.tableName);
+      } else {
+        // If this function called without any data we are trying to reset the
+        // database to the local copy
+        this.setup()
+      }
       return this.table;
     },
     // Returns a list of all the tables in the database
@@ -161,14 +167,14 @@
 
       // Loop through table to find the first match. It starts by trying to find
       // one by id and if it can't, it falls back to looking by cid
-      if(id === 0 || id) {
+      if(id || id === 0) {
         match = lazyFindMatch('id', id);
       }
       if(!match) {
-        if(cid) {
+        if(cid || cid === 0) {
           match = lazyFindMatch('cid', cid);
         }
-        if (!match) {
+        if (!match && id ) {
           match =  lazyFindMatch('cid', id);
         }
       }
@@ -269,7 +275,7 @@
     // When initializing a table you pass in it's name and options. If you
     // create another adapter you can pass in an adapter to the options hash
     initialize: function(tableName, options) {
-      if(!tableName) {
+      if(!tableName && !this.tableName) {
         throw new Error('You must provide a table name when initializing a table');
       }
       options || (options = {});
@@ -299,7 +305,7 @@
     //     var carsTable = new Romantic.DB.Table('cars');
     //     carsTable.replace(cars);
     replace: function(table) {
-      return this._store.setTable(this.filterData(table));
+      this._store.setTable(this.filterData(table));
     },
 
     // Utility function to console.table out the table for easy debugging
