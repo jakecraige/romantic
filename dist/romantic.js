@@ -1,4 +1,4 @@
-// RomanticDB.js
+// Romantic.js
 // ----------------------------------
 // v0.0.1
 //
@@ -7,39 +7,27 @@
 //
 // http://jcraige.com
 //
-// *TODO:*
-// +  Set up query functions to accept an array
-// +  Remove store2 dependency in LocalStorageAdapter
-// +  Relationships
-//
-// Description:
-// --------------------
-// Library for managing client side data in web and mobile applications.
-//
-// It comes with a localStorage adapter that treats localStorage database and provides and interface
-// for managing and querying the data.
-//
-// Dependencies:
-// ------------------
-//  +  Underscore - https://github.com/jashkenas/underscore
-//  +  Store2     - https://github.com/nbubna/store
-//
-//
-// Example:
-// --------------------
-//
-//     var users          = new Romantic.Table('users', {dbName: 'apple'});
-//     var john           = users.create({ id: 1, firstName: 'John', lastName: 'Doe' });
-//     var foundJohn      = users.find(1); // or users.find(john)
-//     john.firstName     = 'Jane';
-//     john               = users.update(john);
-//     var destroyedJohn  = users.destroy(1); // or users.destroy(john)
+// More info in readme found at https://github.com/jakecraige/romantic
 
 (function(root, factory) {
 
   root.Romantic = factory(root, {}, root._);
 
 }(this, function(root, Romantic, _) {
+
+  // Borrowed from: https://github.com/jashkenas/underscore/issues/557
+  _.mixin({
+    deepIndex: function (array, item) {
+      var result = -1;
+      _.some(array, function (value, index) {
+        if (_.isEqual(value, item)) {
+          result = index;
+          return true;
+        }
+      });
+      return result;
+    }
+  });
 
   // Create local references to array methods we'll want to use later.(Backbone)
   var array = [];
@@ -91,14 +79,17 @@
       this.setup();
       return this;
     },
+
     setup: function() {
       this.setupDatabase();
       this.setupTable();
     },
+
     setupDatabase: function() {
       this.database = null;
       this.database = new Romantic.LocalStorage.DB(this.dbName);
     },
+
     setupTable: function() {
       if(!_.include(this.tables(), this.tableName)) {
         this.setTable([]);
@@ -112,6 +103,7 @@
       if(newTable == null) { newTable = this.table; }
       return this.setTable(newTable);
     },
+
     setTable: function(data) {
       if(data) {
         this.database.set(this.tableName, data);
@@ -123,30 +115,48 @@
       }
       return this.table;
     },
+
     // Returns a list of all the tables in the database
     tables: function(tableName) {
       return this.database.tables();
     },
+
     // Removes the table completely from the database
     destroyAll: function() {
       var deletedDB = this.database.destroy(this.tableName);
       this.setup();
       return deletedDB;
     },
+
     // Returns the table, an array of objects
     all: function() {
-      return this.table;
+      return _.clone(this.table);
     },
+
     // When passed in an object/string/num it will pull out the id or cid and
     // find that in the table and return the found object, the id will always
     // take precedence
     find: function(data) {
-      var _this, id, cid, match;
+      var _this, id, cid, match, isValidId;
       id = data;
 
-      if(data instanceof Object) {
+      if(_.isObject(data) && !_.isArray(data)) {
         id = data.id;
         cid = data.cid;
+      }
+
+      isValidId = function(id) {
+        if(_.isNumber(id) && id >= 0) {
+          return true;
+        } else if(_.isString(id)) {
+          return true;
+        }
+      };
+
+      if((id || id === 0) && !isValidId(id)) {
+        throw new Error('id: ' + id + ' is not a valid id');
+      } else if((cid || cid === 0) && !isValidId(cid)) {
+        throw new Error('cid: ' + cid + ' is not a valid id');
       }
 
       // Used to find matches in the table. Purposely using lazy == so that
@@ -155,18 +165,15 @@
       _this = this;
       lazyFindMatch = function(key, val) {
         return _.find(_this.table, function(row){
-          if((_.isNumber(val) && val >= 0) || _.isString(val)) {
-            if(row[key] == val) {
-              return true;
-            }
-          } else {
-            throw new Error(key + ' must be a string or an integer > 0')
+          if(row[key] == val) {
+            return true;
           }
         });
       };
 
       // Loop through table to find the first match. It starts by trying to find
       // one by id and if it can't, it falls back to looking by cid
+      // TODO: this could definitely be refactored
       if(id || id === 0) {
         match = lazyFindMatch('id', id);
       }
@@ -178,8 +185,9 @@
           match =  lazyFindMatch('cid', id);
         }
       }
-      return match;
+      return _.clone(match);
     },
+
     // Pass in an object that will be given a unique cid, pushed onto the table,
     // and saved
     // Returns the new object
@@ -188,34 +196,39 @@
       data.cid = guid();
       this.table.push(data);
       this.replace();
-      return data;
+      return _.clone(data);
     },
+
     // Pass in an object that will be updated and saved
     // Returns the modified object
     update: function(data) {
       var row, index;
-      row   = this.find(data);
-      index = _.indexOf(this.table, row);
 
+      row   = this.find(data);
+      index = _.deepIndex(this.table, row);
       if(!row) {
         throw new Error('Couldnt find record with that id or cid');
       }
-      this.table[index] = _.extend(row, data);
+      row = _.extend(row, data);
+      this.table[index] = row;
       this.replace();
-      return row;
+      return _.clone(row);
     },
+
     // Pass in an object/id that will be destroyed and saved on the table
     // Returns the deleted row
     destroy: function(data) {
-      var row;
+      var row, index;
       row = this.find(data);
       if(!row) { return false; }
-      this.table = _.without(this.table, row);
-      this.replace();
-      return row;
+      index = _.deepIndex(this.table, row);
+      if(index !== undefined) {
+        this.table.splice(index,1);
+      }
+      this.replace()
+      return _.clone(row);
     }
   });
-
 
   // DB Constructor
   // -------------------------------
@@ -233,25 +246,31 @@
       this.reload();
       return this;
     },
+
     // Sets up the local database. Called externally to reload the database
     // after it's been cleared
     reload: function() {
       this._database = store.namespace(this._dbName);
       return this._database;
     },
+
     all: function() {
       return this._database.getAll();
     },
+
     tables: function() {
       return _.keys(this.all());
     },
+
     get: function(tableName) {
       return this._database.get(tableName);
     },
+
     set: function(tableName, data) {
       this._database.set(tableName, data);
       return this.get(tableName);
     },
+
     destroy: function(tableName) {
       return this._database.remove(tableName);
     }
@@ -342,15 +361,15 @@
     //   + String
     //   + Number
     //   + Boolean
-    //   + Date
+    //   + Custom function returning a boolean for if it's accepted or not
     //
     //  The object can be mixed with functions and type strings
     //
     filterData: function(data) {
       if(this.schema) {
         var validKeys;
-        // We start with the cid, so it needs to always be allowed
-        validKeys = ['cid'];
+        // We start with the cid and id, they will always be permitted
+        validKeys = ['cid', 'id'];
 
         // The schema is only an array of keys, no validations will be done
         if(_.isArray(this.schema)) {
@@ -375,7 +394,7 @@
             } else {
               // Loop through accepted types and use underscores method to
               // verify that it is one of those types
-              acceptedTypes = ['array', 'object', 'string', 'number', 'boolean', 'date'];
+              acceptedTypes = ['array', 'object', 'string', 'number', 'boolean'];
               _.each(acceptedTypes, function(type) {
                 if(val === type && _['is'+Romantic.String.capitalize(type)](data[key])) {
                   validKeys.push(key);
@@ -396,7 +415,7 @@
     // Defers to current store's `create`
     create: function(data) {
       this._store.create(this.filterData(data));
-      return this._store.find(data);
+      return this.find(data);
     },
 
     // Gets all data from current store via `all` and filters it and returns an
@@ -414,8 +433,8 @@
 
     // Filters data via schema and defers to current store's `update`
     update: function(data) {
-      data = this.filterData(data);
-      return this._store.update(data);
+      this._store.update(this.filterData(data));
+      return this.find(data);
     },
 
     // Defers to the current store's `deferAll`

@@ -63,6 +63,32 @@ Distributed under MIT license</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-3">&#182;</a>
               </div>
+              <p>Borrowed from: <a href="https://github.com/jashkenas/underscore/issues/557">https://github.com/jashkenas/underscore/issues/557</a></p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  _.mixin({
+    deepIndex: <span class="function"><span class="keyword">function</span> <span class="params">(array, item)</span> {</span>
+      <span class="keyword">var</span> result = -<span class="number">1</span>;
+      _.some(array, <span class="function"><span class="keyword">function</span> <span class="params">(value, index)</span> {</span>
+        <span class="keyword">if</span> (_.isEqual(value, item)) {
+          result = index;
+          <span class="keyword">return</span> <span class="literal">true</span>;
+        }
+      });
+      <span class="keyword">return</span> result;
+    }
+  });</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
               <p>Create local references to array methods we&#39;ll want to use later.(Backbone)</p>
 
             </div>
@@ -80,11 +106,11 @@ Distributed under MIT license</p>
         </li>
         
         
-        <li id="section-4">
+        <li id="section-5">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-4">&#182;</a>
+                <a class="pilcrow" href="#section-5">&#182;</a>
               </div>
               <h2 id="localstorage-adapter-constructor">LocalStorage Adapter Constructor</h2>
 
@@ -93,11 +119,11 @@ Distributed under MIT license</p>
         </li>
         
         
-        <li id="section-5">
+        <li id="section-6">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-5">&#182;</a>
+                <a class="pilcrow" href="#section-6">&#182;</a>
               </div>
               
             </div>
@@ -109,11 +135,11 @@ Distributed under MIT license</p>
         </li>
         
         
-        <li id="section-6">
+        <li id="section-7">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-6">&#182;</a>
+                <a class="pilcrow" href="#section-7">&#182;</a>
               </div>
               <h2 id="localstorage-adapter-methods">LocalStorage Adapter Methods</h2>
 
@@ -122,11 +148,11 @@ Distributed under MIT license</p>
         </li>
         
         
-        <li id="section-7">
+        <li id="section-8">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-7">&#182;</a>
+                <a class="pilcrow" href="#section-8">&#182;</a>
               </div>
               <p>Guid generation borrowed from
 <a href="http://documentup.com/jeromegn/backbone.localStorage">http://documentup.com/jeromegn/backbone.localStorage</a>
@@ -141,11 +167,11 @@ Generate four random hex digits.</p>
         </li>
         
         
-        <li id="section-8">
+        <li id="section-9">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-8">&#182;</a>
+                <a class="pilcrow" href="#section-9">&#182;</a>
               </div>
               <p>Generate a pseudo-GUID by concatenating random hexadecimal.</p>
 
@@ -158,11 +184,11 @@ Generate four random hex digits.</p>
         </li>
         
         
-        <li id="section-9">
+        <li id="section-10">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-9">&#182;</a>
+                <a class="pilcrow" href="#section-10">&#182;</a>
               </div>
               <p>Adapter API</p>
 <ul>
@@ -186,14 +212,17 @@ Generate four random hex digits.</p>
       <span class="keyword">this</span>.setup();
       <span class="keyword">return</span> <span class="keyword">this</span>;
     },
+
     setup: <span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
       <span class="keyword">this</span>.setupDatabase();
       <span class="keyword">this</span>.setupTable();
     },
+
     setupDatabase: <span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
       <span class="keyword">this</span>.database = <span class="literal">null</span>;
       <span class="keyword">this</span>.database = <span class="keyword">new</span> Romantic.LocalStorage.DB(<span class="keyword">this</span>.dbName);
     },
+
     setupTable: <span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
       <span class="keyword">if</span>(!_.include(<span class="keyword">this</span>.tables(), <span class="keyword">this</span>.tableName)) {
         <span class="keyword">this</span>.setTable([]);
@@ -205,11 +234,11 @@ Generate four random hex digits.</p>
         </li>
         
         
-        <li id="section-10">
+        <li id="section-11">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-10">&#182;</a>
+                <a class="pilcrow" href="#section-11">&#182;</a>
               </div>
               <p>Replaces the table with the array of objects passed in</p>
 
@@ -219,6 +248,7 @@ Generate four random hex digits.</p>
       <span class="keyword">if</span>(newTable == <span class="literal">null</span>) { newTable = <span class="keyword">this</span>.table; }
       <span class="keyword">return</span> <span class="keyword">this</span>.setTable(newTable);
     },
+
     setTable: <span class="function"><span class="keyword">function</span><span class="params">(data)</span> {</span>
       <span class="keyword">if</span>(data) {
         <span class="keyword">this</span>.database.set(<span class="keyword">this</span>.tableName, data);
@@ -228,11 +258,11 @@ Generate four random hex digits.</p>
         </li>
         
         
-        <li id="section-11">
+        <li id="section-12">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-11">&#182;</a>
+                <a class="pilcrow" href="#section-12">&#182;</a>
               </div>
               <p>If this function called without any data we are trying to reset the
 database to the local copy</p>
@@ -247,11 +277,11 @@ database to the local copy</p>
         </li>
         
         
-        <li id="section-12">
+        <li id="section-13">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-12">&#182;</a>
+                <a class="pilcrow" href="#section-13">&#182;</a>
               </div>
               <p>Returns a list of all the tables in the database</p>
 
@@ -264,11 +294,11 @@ database to the local copy</p>
         </li>
         
         
-        <li id="section-13">
+        <li id="section-14">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-13">&#182;</a>
+                <a class="pilcrow" href="#section-14">&#182;</a>
               </div>
               <p>Removes the table completely from the database</p>
 
@@ -283,43 +313,19 @@ database to the local copy</p>
         </li>
         
         
-        <li id="section-14">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-14">&#182;</a>
-              </div>
-              <p>Returns the table, an array of objects</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>    all: <span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
-      <span class="keyword">return</span> <span class="keyword">this</span>.table;
-    },</pre></div></div>
-            
-        </li>
-        
-        
         <li id="section-15">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-15">&#182;</a>
               </div>
-              <p>When passed in an object/string/num it will pull out the id or cid and
-find that in the table and return the found object, the id will always
-take precedence</p>
+              <p>Returns the table, an array of objects</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    find: <span class="function"><span class="keyword">function</span><span class="params">(data)</span> {</span>
-      <span class="keyword">var</span> _this, id, cid, match;
-      id = data;
-
-      <span class="keyword">if</span>(data <span class="keyword">instanceof</span> Object) {
-        id = data.id;
-        cid = data.cid;
-      }</pre></div></div>
+            <div class="content"><div class='highlight'><pre>    all: <span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
+      <span class="keyword">return</span> _.clone(<span class="keyword">this</span>.table);
+    },</pre></div></div>
             
         </li>
         
@@ -330,24 +336,34 @@ take precedence</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-16">&#182;</a>
               </div>
-              <p>Used to find matches in the table. Purposely using lazy == so that
-there aren&#39;t issues with an id being a string like &quot;123&quot; and not
-matching 123</p>
+              <p>When passed in an object/string/num it will pull out the id or cid and
+find that in the table and return the found object, the id will always
+take precedence</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>      _this = <span class="keyword">this</span>;
-      lazyFindMatch = <span class="function"><span class="keyword">function</span><span class="params">(key, val)</span> {</span>
-        <span class="keyword">return</span> _.find(_this.table, <span class="function"><span class="keyword">function</span><span class="params">(row)</span>{</span>
-          <span class="keyword">if</span>((_.isNumber(val) &amp;&amp; val &gt;= <span class="number">0</span>) || _.isString(val)) {
-            <span class="keyword">if</span>(row[key] == val) {
-              <span class="keyword">return</span> <span class="literal">true</span>;
-            }
-          } <span class="keyword">else</span> {
-            <span class="keyword">throw</span> <span class="keyword">new</span> Error(key + <span class="string">' must be a string or an integer &gt; 0'</span>)
-          }
-        });
-      };</pre></div></div>
+            <div class="content"><div class='highlight'><pre>    find: <span class="function"><span class="keyword">function</span><span class="params">(data)</span> {</span>
+      <span class="keyword">var</span> _this, id, cid, match, isValidId;
+      id = data;
+
+      <span class="keyword">if</span>(_.isObject(data) &amp;&amp; !_.isArray(data)) {
+        id = data.id;
+        cid = data.cid;
+      }
+
+      isValidId = <span class="function"><span class="keyword">function</span><span class="params">(id)</span> {</span>
+        <span class="keyword">if</span>(_.isNumber(id) &amp;&amp; id &gt;= <span class="number">0</span>) {
+          <span class="keyword">return</span> <span class="literal">true</span>;
+        } <span class="keyword">else</span> <span class="keyword">if</span>(_.isString(id)) {
+          <span class="keyword">return</span> <span class="literal">true</span>;
+        }
+      };
+
+      <span class="keyword">if</span>((id || id === <span class="number">0</span>) &amp;&amp; !isValidId(id)) {
+        <span class="keyword">throw</span> <span class="keyword">new</span> Error(<span class="string">'id: '</span> + id + <span class="string">' is not a valid id'</span>);
+      } <span class="keyword">else</span> <span class="keyword">if</span>((cid || cid === <span class="number">0</span>) &amp;&amp; !isValidId(cid)) {
+        <span class="keyword">throw</span> <span class="keyword">new</span> Error(<span class="string">'cid: '</span> + cid + <span class="string">' is not a valid id'</span>);
+      }</pre></div></div>
             
         </li>
         
@@ -358,8 +374,33 @@ matching 123</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-17">&#182;</a>
               </div>
+              <p>Used to find matches in the table. Purposely using lazy == so that
+there aren&#39;t issues with an id being a string like &quot;123&quot; and not
+matching 123</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      _this = <span class="keyword">this</span>;
+      lazyFindMatch = <span class="function"><span class="keyword">function</span><span class="params">(key, val)</span> {</span>
+        <span class="keyword">return</span> _.find(_this.table, <span class="function"><span class="keyword">function</span><span class="params">(row)</span>{</span>
+          <span class="keyword">if</span>(row[key] == val) {
+            <span class="keyword">return</span> <span class="literal">true</span>;
+          }
+        });
+      };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-18">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-18">&#182;</a>
+              </div>
               <p>Loop through table to find the first match. It starts by trying to find
-one by id and if it can&#39;t, it falls back to looking by cid</p>
+one by id and if it can&#39;t, it falls back to looking by cid
+TODO: this could definitely be refactored</p>
 
             </div>
             
@@ -374,17 +415,17 @@ one by id and if it can&#39;t, it falls back to looking by cid</p>
           match =  lazyFindMatch(<span class="string">'cid'</span>, id);
         }
       }
-      <span class="keyword">return</span> match;
+      <span class="keyword">return</span> _.clone(match);
     },</pre></div></div>
             
         </li>
         
         
-        <li id="section-18">
+        <li id="section-19">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-18">&#182;</a>
+                <a class="pilcrow" href="#section-19">&#182;</a>
               </div>
               <p>Pass in an object that will be given a unique cid, pushed onto the table,
 and saved
@@ -397,34 +438,7 @@ Returns the new object</p>
       data.cid = guid();
       <span class="keyword">this</span>.table.push(data);
       <span class="keyword">this</span>.replace();
-      <span class="keyword">return</span> data;
-    },</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-19">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-19">&#182;</a>
-              </div>
-              <p>Pass in an object that will be updated and saved
-Returns the modified object</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>    update: <span class="function"><span class="keyword">function</span><span class="params">(data)</span> {</span>
-      <span class="keyword">var</span> row, index;
-      row   = <span class="keyword">this</span>.find(data);
-      index = _.indexOf(<span class="keyword">this</span>.table, row);
-
-      <span class="keyword">if</span>(!row) {
-        <span class="keyword">throw</span> <span class="keyword">new</span> Error(<span class="string">'Couldnt find record with that id or cid'</span>);
-      }
-      <span class="keyword">this</span>.table[index] = _.extend(row, data);
-      <span class="keyword">this</span>.replace();
-      <span class="keyword">return</span> row;
+      <span class="keyword">return</span> _.clone(data);
     },</pre></div></div>
             
         </li>
@@ -436,20 +450,24 @@ Returns the modified object</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-20">&#182;</a>
               </div>
-              <p>Pass in an object/id that will be destroyed and saved on the table
-Returns the deleted row</p>
+              <p>Pass in an object that will be updated and saved
+Returns the modified object</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    destroy: <span class="function"><span class="keyword">function</span><span class="params">(data)</span> {</span>
-      <span class="keyword">var</span> row;
-      row = <span class="keyword">this</span>.find(data);
-      <span class="keyword">if</span>(!row) { <span class="keyword">return</span> <span class="literal">false</span>; }
-      <span class="keyword">this</span>.table = _.without(<span class="keyword">this</span>.table, row);
+            <div class="content"><div class='highlight'><pre>    update: <span class="function"><span class="keyword">function</span><span class="params">(data)</span> {</span>
+      <span class="keyword">var</span> row, index;
+
+      row   = <span class="keyword">this</span>.find(data);
+      index = _.deepIndex(<span class="keyword">this</span>.table, row);
+      <span class="keyword">if</span>(!row) {
+        <span class="keyword">throw</span> <span class="keyword">new</span> Error(<span class="string">'Couldnt find record with that id or cid'</span>);
+      }
+      row = _.extend(row, data);
+      <span class="keyword">this</span>.table[index] = row;
       <span class="keyword">this</span>.replace();
-      <span class="keyword">return</span> row;
-    }
-  });</pre></div></div>
+      <span class="keyword">return</span> _.clone(row);
+    },</pre></div></div>
             
         </li>
         
@@ -460,9 +478,23 @@ Returns the deleted row</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-21">&#182;</a>
               </div>
-              <h2 id="db-constructor">DB Constructor</h2>
+              <p>Pass in an object/id that will be destroyed and saved on the table
+Returns the deleted row</p>
 
             </div>
+            
+            <div class="content"><div class='highlight'><pre>    destroy: <span class="function"><span class="keyword">function</span><span class="params">(data)</span> {</span>
+      <span class="keyword">var</span> row, index;
+      row = <span class="keyword">this</span>.find(data);
+      <span class="keyword">if</span>(!row) { <span class="keyword">return</span> <span class="literal">false</span>; }
+      index = _.deepIndex(<span class="keyword">this</span>.table, row);
+      <span class="keyword">if</span>(index !== <span class="literal">undefined</span>) {
+        <span class="keyword">this</span>.table.splice(index,<span class="number">1</span>);
+      }
+      <span class="keyword">this</span>.replace()
+      <span class="keyword">return</span> _.clone(row);
+    }
+  });</pre></div></div>
             
         </li>
         
@@ -472,6 +504,19 @@ Returns the deleted row</p>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-22">&#182;</a>
+              </div>
+              <h2 id="db-constructor">DB Constructor</h2>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-23">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-23">&#182;</a>
               </div>
               
             </div>
@@ -483,11 +528,11 @@ Returns the deleted row</p>
         </li>
         
         
-        <li id="section-23">
+        <li id="section-24">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-23">&#182;</a>
+                <a class="pilcrow" href="#section-24">&#182;</a>
               </div>
               <h2 id="db-methods">DB Methods</h2>
 
@@ -496,11 +541,11 @@ Returns the deleted row</p>
         </li>
         
         
-        <li id="section-24">
+        <li id="section-25">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-24">&#182;</a>
+                <a class="pilcrow" href="#section-25">&#182;</a>
               </div>
               
             </div>
@@ -515,11 +560,11 @@ Returns the deleted row</p>
         </li>
         
         
-        <li id="section-25">
+        <li id="section-26">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-25">&#182;</a>
+                <a class="pilcrow" href="#section-26">&#182;</a>
               </div>
               <p>Sets up the local database. Called externally to reload the database
 after it&#39;s been cleared</p>
@@ -530,19 +575,24 @@ after it&#39;s been cleared</p>
       <span class="keyword">this</span>._database = store.namespace(<span class="keyword">this</span>._dbName);
       <span class="keyword">return</span> <span class="keyword">this</span>._database;
     },
+
     all: <span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
       <span class="keyword">return</span> <span class="keyword">this</span>._database.getAll();
     },
+
     tables: <span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
       <span class="keyword">return</span> _.keys(<span class="keyword">this</span>.all());
     },
+
     get: <span class="function"><span class="keyword">function</span><span class="params">(tableName)</span> {</span>
       <span class="keyword">return</span> <span class="keyword">this</span>._database.get(tableName);
     },
+
     set: <span class="function"><span class="keyword">function</span><span class="params">(tableName, data)</span> {</span>
       <span class="keyword">this</span>._database.set(tableName, data);
       <span class="keyword">return</span> <span class="keyword">this</span>.get(tableName);
     },
+
     destroy: <span class="function"><span class="keyword">function</span><span class="params">(tableName)</span> {</span>
       <span class="keyword">return</span> <span class="keyword">this</span>._database.remove(tableName);
     }
@@ -552,11 +602,11 @@ after it&#39;s been cleared</p>
         </li>
         
         
-        <li id="section-26">
+        <li id="section-27">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-26">&#182;</a>
+                <a class="pilcrow" href="#section-27">&#182;</a>
               </div>
               <h2 id="table-constructor">Table Constructor</h2>
 
@@ -565,11 +615,11 @@ after it&#39;s been cleared</p>
         </li>
         
         
-        <li id="section-27">
+        <li id="section-28">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-27">&#182;</a>
+                <a class="pilcrow" href="#section-28">&#182;</a>
               </div>
               
             </div>
@@ -581,29 +631,15 @@ after it&#39;s been cleared</p>
         </li>
         
         
-        <li id="section-28">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-28">&#182;</a>
-              </div>
-              <h2 id="table-methods">Table Methods</h2>
-
-            </div>
-            
-        </li>
-        
-        
         <li id="section-29">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-29">&#182;</a>
               </div>
-              
+              <h2 id="table-methods">Table Methods</h2>
+
             </div>
-            
-            <div class="content"><div class='highlight'><pre>  _.extend(Table.prototype, {</pre></div></div>
             
         </li>
         
@@ -613,6 +649,20 @@ after it&#39;s been cleared</p>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-30">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  _.extend(Table.prototype, {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-31">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-31">&#182;</a>
               </div>
               <p>When initializing a table you pass in it&#39;s name and options. If you
 create another adapter you can pass in an adapter to the options hash</p>
@@ -636,11 +686,11 @@ create another adapter you can pass in an adapter to the options hash</p>
         </li>
         
         
-        <li id="section-31">
+        <li id="section-32">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-31">&#182;</a>
+                <a class="pilcrow" href="#section-32">&#182;</a>
               </div>
               <p>This sets up the store instance inside the object</p>
 
@@ -654,11 +704,11 @@ create another adapter you can pass in an adapter to the options hash</p>
         </li>
         
         
-        <li id="section-32">
+        <li id="section-33">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-32">&#182;</a>
+                <a class="pilcrow" href="#section-33">&#182;</a>
               </div>
               <p>Takes an optional table parameter(array of objects), this allows you to
 completely replace the database with a new data set.</p>
@@ -677,11 +727,11 @@ carsTable.replace(cars);</code></pre>
         </li>
         
         
-        <li id="section-33">
+        <li id="section-34">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-33">&#182;</a>
+                <a class="pilcrow" href="#section-34">&#182;</a>
               </div>
               <p>Utility function to console.table out the table for easy debugging</p>
 
@@ -694,11 +744,11 @@ carsTable.replace(cars);</code></pre>
         </li>
         
         
-        <li id="section-34">
+        <li id="section-35">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-34">&#182;</a>
+                <a class="pilcrow" href="#section-35">&#182;</a>
               </div>
               <p>Utility function to console.log out the table for easy debugging</p>
 
@@ -711,11 +761,11 @@ carsTable.replace(cars);</code></pre>
         </li>
         
         
-        <li id="section-35">
+        <li id="section-36">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-35">&#182;</a>
+                <a class="pilcrow" href="#section-36">&#182;</a>
               </div>
               <p>Filters data to attributes specified in table <code>schema</code>.</p>
 <p>It can be an array of keys:
@@ -739,7 +789,7 @@ validation:
 <li>String</li>
 <li>Number</li>
 <li>Boolean</li>
-<li><p>Date</p>
+<li><p>Custom function returning a boolean for if it&#39;s accepted or not</p>
 <p>The object can be mixed with functions and type strings</p>
 </li>
 </ul>
@@ -753,26 +803,26 @@ validation:
         </li>
         
         
-        <li id="section-36">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-36">&#182;</a>
-              </div>
-              <p>We start with the cid, so it needs to always be allowed</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>        validKeys = [<span class="string">'cid'</span>];</pre></div></div>
-            
-        </li>
-        
-        
         <li id="section-37">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-37">&#182;</a>
+              </div>
+              <p>We start with the cid and id, they will always be permitted</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        validKeys = [<span class="string">'cid'</span>, <span class="string">'id'</span>];</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-38">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-38">&#182;</a>
               </div>
               <p>The schema is only an array of keys, no validations will be done</p>
 
@@ -783,11 +833,11 @@ validation:
         </li>
         
         
-        <li id="section-38">
+        <li id="section-39">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-38">&#182;</a>
+                <a class="pilcrow" href="#section-39">&#182;</a>
               </div>
               <p>Add each value in the array as a valid key</p>
 
@@ -800,11 +850,11 @@ validation:
         </li>
         
         
-        <li id="section-39">
+        <li id="section-40">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-39">&#182;</a>
+                <a class="pilcrow" href="#section-40">&#182;</a>
               </div>
               <p>Schema is an object so we will need to specify validations</p>
 
@@ -817,11 +867,11 @@ validation:
         </li>
         
         
-        <li id="section-40">
+        <li id="section-41">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-40">&#182;</a>
+                <a class="pilcrow" href="#section-41">&#182;</a>
               </div>
               <p>Accept any attribute if the value is &#39;&#39;
 or
@@ -839,18 +889,18 @@ reason? Instead of the ||</p>
         </li>
         
         
-        <li id="section-41">
+        <li id="section-42">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-41">&#182;</a>
+                <a class="pilcrow" href="#section-42">&#182;</a>
               </div>
               <p>Loop through accepted types and use underscores method to
 verify that it is one of those types</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>              acceptedTypes = [<span class="string">'array'</span>, <span class="string">'object'</span>, <span class="string">'string'</span>, <span class="string">'number'</span>, <span class="string">'boolean'</span>, <span class="string">'date'</span>];
+            <div class="content"><div class='highlight'><pre>              acceptedTypes = [<span class="string">'array'</span>, <span class="string">'object'</span>, <span class="string">'string'</span>, <span class="string">'number'</span>, <span class="string">'boolean'</span>];
               _.each(acceptedTypes, <span class="function"><span class="keyword">function</span><span class="params">(type)</span> {</span>
                 <span class="keyword">if</span>(val === type &amp;&amp; _[<span class="string">'is'</span>+Romantic.String.capitalize(type)](data[key])) {
                   validKeys.push(key);
@@ -865,11 +915,11 @@ verify that it is one of those types</p>
         </li>
         
         
-        <li id="section-42">
+        <li id="section-43">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-42">&#182;</a>
+                <a class="pilcrow" href="#section-43">&#182;</a>
               </div>
               <p>Returns new object with only the keys from validKeys pulled out</p>
 
@@ -883,11 +933,11 @@ verify that it is one of those types</p>
         </li>
         
         
-        <li id="section-43">
+        <li id="section-44">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-43">&#182;</a>
+                <a class="pilcrow" href="#section-44">&#182;</a>
               </div>
               <p>Defers to current store&#39;s <code>create</code></p>
 
@@ -895,17 +945,17 @@ verify that it is one of those types</p>
             
             <div class="content"><div class='highlight'><pre>    create: <span class="function"><span class="keyword">function</span><span class="params">(data)</span> {</span>
       <span class="keyword">this</span>._store.create(<span class="keyword">this</span>.filterData(data));
-      <span class="keyword">return</span> <span class="keyword">this</span>._store.find(data);
+      <span class="keyword">return</span> <span class="keyword">this</span>.find(data);
     },</pre></div></div>
             
         </li>
         
         
-        <li id="section-44">
+        <li id="section-45">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-44">&#182;</a>
+                <a class="pilcrow" href="#section-45">&#182;</a>
               </div>
               <p>Gets all data from current store via <code>all</code> and filters it and returns an
 array of that data</p>
@@ -921,11 +971,11 @@ array of that data</p>
         </li>
         
         
-        <li id="section-45">
+        <li id="section-46">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-45">&#182;</a>
+                <a class="pilcrow" href="#section-46">&#182;</a>
               </div>
               <p>Defers to the current store&#39;s <code>find</code></p>
 
@@ -938,29 +988,29 @@ array of that data</p>
         </li>
         
         
-        <li id="section-46">
+        <li id="section-47">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-46">&#182;</a>
+                <a class="pilcrow" href="#section-47">&#182;</a>
               </div>
               <p>Filters data via schema and defers to current store&#39;s <code>update</code></p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>    update: <span class="function"><span class="keyword">function</span><span class="params">(data)</span> {</span>
-      data = <span class="keyword">this</span>.filterData(data);
-      <span class="keyword">return</span> <span class="keyword">this</span>._store.update(data);
+      <span class="keyword">this</span>._store.update(<span class="keyword">this</span>.filterData(data));
+      <span class="keyword">return</span> <span class="keyword">this</span>.find(data);
     },</pre></div></div>
             
         </li>
         
         
-        <li id="section-47">
+        <li id="section-48">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-47">&#182;</a>
+                <a class="pilcrow" href="#section-48">&#182;</a>
               </div>
               <p>Defers to the current store&#39;s <code>deferAll</code></p>
 
@@ -973,11 +1023,11 @@ array of that data</p>
         </li>
         
         
-        <li id="section-48">
+        <li id="section-49">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-48">&#182;</a>
+                <a class="pilcrow" href="#section-49">&#182;</a>
               </div>
               <p>Defers to current store&#39;s <code>create</code></p>
 
@@ -992,11 +1042,11 @@ array of that data</p>
         </li>
         
         
-        <li id="section-49">
+        <li id="section-50">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-49">&#182;</a>
+                <a class="pilcrow" href="#section-50">&#182;</a>
               </div>
               <p>Code Borrowed From Backbone
 <a href="http://backbonejs.org">http://backbonejs.org</a></p>
@@ -1013,11 +1063,11 @@ array of that data</p>
         </li>
         
         
-        <li id="section-50">
+        <li id="section-51">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-50">&#182;</a>
+                <a class="pilcrow" href="#section-51">&#182;</a>
               </div>
               <p>Mix in each Underscore method as a proxy to <code>Table#_table</code>.</p>
 
@@ -1034,11 +1084,11 @@ array of that data</p>
         </li>
         
         
-        <li id="section-51">
+        <li id="section-52">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-51">&#182;</a>
+                <a class="pilcrow" href="#section-52">&#182;</a>
               </div>
               <p>Underscore methods that take a property name as an argument.</p>
 
@@ -1049,11 +1099,11 @@ array of that data</p>
         </li>
         
         
-        <li id="section-52">
+        <li id="section-53">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-52">&#182;</a>
+                <a class="pilcrow" href="#section-53">&#182;</a>
               </div>
               <p>Use attributes instead of properties.</p>
 
@@ -1075,11 +1125,11 @@ array of that data</p>
         </li>
         
         
-        <li id="section-53">
+        <li id="section-54">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-53">&#182;</a>
+                <a class="pilcrow" href="#section-54">&#182;</a>
               </div>
               <p>The constructor function for the new subclass is either defined by you
 (the &quot;constructor&quot; property in your <code>extend</code> definition), or defaulted
@@ -1096,11 +1146,11 @@ by us to simply call the parent&#39;s constructor.</p>
         </li>
         
         
-        <li id="section-54">
+        <li id="section-55">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-54">&#182;</a>
+                <a class="pilcrow" href="#section-55">&#182;</a>
               </div>
               <p>Add static properties to the constructor function, if supplied.</p>
 
@@ -1111,11 +1161,11 @@ by us to simply call the parent&#39;s constructor.</p>
         </li>
         
         
-        <li id="section-55">
+        <li id="section-56">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-55">&#182;</a>
+                <a class="pilcrow" href="#section-56">&#182;</a>
               </div>
               <p>Set the prototype chain to inherit from <code>parent</code>, without calling
 <code>parent</code>&#39;s constructor function.</p>
@@ -1129,11 +1179,11 @@ by us to simply call the parent&#39;s constructor.</p>
         </li>
         
         
-        <li id="section-56">
+        <li id="section-57">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-56">&#182;</a>
+                <a class="pilcrow" href="#section-57">&#182;</a>
               </div>
               <p>Add prototype properties (instance properties) to the subclass,
 if supplied.</p>
@@ -1145,11 +1195,11 @@ if supplied.</p>
         </li>
         
         
-        <li id="section-57">
+        <li id="section-58">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-57">&#182;</a>
+                <a class="pilcrow" href="#section-58">&#182;</a>
               </div>
               <p>Set a convenience property in case the parent&#39;s prototype is needed
 later.</p>
@@ -1164,11 +1214,11 @@ later.</p>
         </li>
         
         
-        <li id="section-58">
+        <li id="section-59">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-58">&#182;</a>
+                <a class="pilcrow" href="#section-59">&#182;</a>
               </div>
               <p>Set up inheritance for the Table</p>
 <p>End of Code Borrowed From Backbone
