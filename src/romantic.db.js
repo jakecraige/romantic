@@ -75,7 +75,7 @@
   };
 
   // Adapter API
-  //  + save
+  //  + replace
   //  + batch
   //  + keys
   //  + set
@@ -86,16 +86,20 @@
   //  + destroyAll
   _.extend(LocalStorage.prototype, {
     initialize: function(options) {
-      this.setupDatabase(options.dbName);
-      this.setupTable(options.tableName);
+      this.dbName = options.dbName;
+      this.tableName = options.tableName;
+      this.setup();
       return this;
     },
-    setupDatabase: function(dbName) {
-      this.database = new Romantic.LocalStorage.DB(dbName);
+    setup: function() {
+      this.setupDatabase();
+      this.setupTable();
     },
-    setupTable: function(tableName) {
-      this.tableName = tableName;
-
+    setupDatabase: function() {
+      this.database = null;
+      this.database = new Romantic.LocalStorage.DB(this.dbName);
+    },
+    setupTable: function() {
       if(!_.include(this.tables(), this.tableName)) {
         this.setTable([]);
       } else {
@@ -104,7 +108,7 @@
     },
 
     // Replaces the table with the array of objects passed in
-    save: function(newTable) {
+    replace: function(newTable) {
       if(newTable == null) { newTable = this.table; }
       return this.setTable(newTable);
     },
@@ -119,7 +123,9 @@
     },
     // Removes the table completely from the database
     destroyAll: function() {
-      return this.database.destroy(this.tableName);
+      var deletedDB = this.database.destroy(this.tableName);
+      this.setup();
+      return deletedDB;
     },
     // Returns the table, an array of objects
     all: function() {
@@ -143,15 +149,21 @@
       _this = this;
       lazyFindMatch = function(key, val) {
         return _.find(_this.table, function(row){
-          if(row[key] == val) {
-            return true;
+          if((_.isNumber(val) && val >= 0) || _.isString(val)) {
+            if(row[key] == val) {
+              return true;
+            }
+          } else {
+            throw new Error(key + ' must be a string or an integer > 0')
           }
         });
       };
 
       // Loop through table to find the first match. It starts by trying to find
       // one by id and if it can't, it falls back to looking by cid
-      match = lazyFindMatch('id', id);
+      if(id === 0 || id) {
+        match = lazyFindMatch('id', id);
+      }
       if(!match) {
         if(cid) {
           match = lazyFindMatch('cid', cid);
@@ -169,7 +181,7 @@
       var table;
       data.cid = guid();
       this.table.push(data);
-      this.save();
+      this.replace();
       return data;
     },
     // Pass in an object that will be updated and saved
@@ -183,7 +195,7 @@
         throw new Error('Couldnt find record with that id or cid');
       }
       this.table[index] = _.extend(row, data);
-      this.save();
+      this.replace();
       return row;
     },
     // Pass in an object/id that will be destroyed and saved on the table
@@ -193,7 +205,7 @@
       row = this.find(data);
       if(!row) { return false; }
       this.table = _.without(this.table, row);
-      this.save();
+      this.replace();
       return row;
     }
   });
@@ -211,8 +223,15 @@
 
   _.extend(DB.prototype, {
     initialize: function(dbName) {
-      this._database = store.namespace(dbName);
+      this._dbName = dbName;
+      this.reload();
       return this;
+    },
+    // Sets up the local database. Called externally to reload the database
+    // after it's been cleared
+    reload: function() {
+      this._database = store.namespace(this._dbName);
+      return this._database;
     },
     all: function() {
       return this._database.getAll();
@@ -250,6 +269,9 @@
     // When initializing a table you pass in it's name and options. If you
     // create another adapter you can pass in an adapter to the options hash
     initialize: function(tableName, options) {
+      if(!tableName) {
+        throw new Error('You must provide a table name when initializing a table');
+      }
       options || (options = {});
 
       options = _.defaults(options, {
@@ -275,8 +297,8 @@
     //
     //     var cars = [{make: 'Chevrolet', cid: 1}, {make: 'Dodge', cid: 2}];
     //     var carsTable = new Romantic.DB.Table('cars');
-    //     carsTable.save(cars);
-    save: function(table) {
+    //     carsTable.replace(cars);
+    replace: function(table) {
       return this._store.setTable(this.filterData(table));
     },
 
