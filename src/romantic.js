@@ -7,33 +7,7 @@
 //
 // http://jcraige.com
 //
-// *TODO:*
-// +  Set up query functions to accept an array
-// +  Remove store2 dependency in LocalStorageAdapter
-// +  Relationships
-//
-// Description:
-// --------------------
-// Library for managing client side data in web and mobile applications.
-//
-// It comes with a localStorage adapter that treats localStorage database and provides and interface
-// for managing and querying the data.
-//
-// Dependencies:
-// ------------------
-//  +  Underscore - https://github.com/jashkenas/underscore
-//  +  Store2     - https://github.com/nbubna/store
-//
-//
-// Example:
-// --------------------
-//
-//     var users          = new Romantic.Table('users', {dbName: 'apple'});
-//     var john           = users.create({ id: 1, firstName: 'John', lastName: 'Doe' });
-//     var foundJohn      = users.find(1); // or users.find(john)
-//     john.firstName     = 'Jane';
-//     john               = users.update(john);
-//     var destroyedJohn  = users.destroy(1); // or users.destroy(john)
+// More info in readme found at https://github.com/jakecraige/romantic
 
 (function(root, factory) {
 

@@ -61,9 +61,14 @@ basic table so you can add a schema and provide validations.
     console.log(jake); // { firstName: "Jake", lastName: "Craige", height: 6 }
 
 
-Examples:
+Docs & Examples:
 --------------------
-Angular: Open example/angular/index.html in your browser
+Docs: 
+  + http://jcraige.com/romantic/docs/
+
+Angular: 
+  + http://jakecraige.com/romantic/angular/
+  + example/angular/index.html in this repo
 
 
 Run Tests:
