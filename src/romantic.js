@@ -115,12 +115,26 @@
     // find that in the table and return the found object, the id will always
     // take precedence
     find: function(data) {
-      var _this, id, cid, match;
+      var _this, id, cid, match, isValidId;
       id = data;
 
-      if(data instanceof Object) {
+      if(_.isObject(data) && !_.isArray(data)) {
         id = data.id;
         cid = data.cid;
+      }
+
+      isValidId = function(id) {
+        if(_.isNumber(id) && id >= 0) {
+          return true;
+        } else if(_.isString(id)) {
+          return true;
+        }
+      };
+
+      if((id || id === 0) && !isValidId(id)) {
+        throw new Error('id: ' + id + ' is not a valid id');
+      } else if((cid || cid === 0) && !isValidId(cid)) {
+        throw new Error('cid: ' + cid + ' is not a valid id');
       }
 
       // Used to find matches in the table. Purposely using lazy == so that
@@ -129,18 +143,14 @@
       _this = this;
       lazyFindMatch = function(key, val) {
         return _.find(_this.table, function(row){
-          if((_.isNumber(val) && val >= 0) || _.isString(val)) {
-            if(row[key] == val) {
-              return true;
-            }
-          } else {
-            throw new Error(key + ' must be a string or an integer > 0')
+          if(row[key] == val) {
+            return true;
           }
         });
       };
-
       // Loop through table to find the first match. It starts by trying to find
       // one by id and if it can't, it falls back to looking by cid
+      // TODO: this could definitely be refactored
       if(id || id === 0) {
         match = lazyFindMatch('id', id);
       }
