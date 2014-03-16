@@ -112,7 +112,7 @@ Distributed under MIT license</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-5">&#182;</a>
               </div>
-              <h2 id="localstorage-adapter-constructor">LocalStorage Adapter Constructor</h2>
+              <h2 id="localforage-adapter-constructor">LocalForage Adapter Constructor</h2>
 
             </div>
             
@@ -128,7 +128,7 @@ Distributed under MIT license</p>
               
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="keyword">var</span> LocalStorage = Romantic.LocalStorage = <span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
+            <div class="content"><div class='highlight'><pre>  <span class="keyword">var</span> LocalForage = Romantic.LocalForage = <span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
     <span class="keyword">this</span>.initialize.apply(<span class="keyword">this</span>, arguments);
   };</pre></div></div>
             
@@ -141,7 +141,7 @@ Distributed under MIT license</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-7">&#182;</a>
               </div>
-              <h2 id="localstorage-adapter-methods">LocalStorage Adapter Methods</h2>
+              <h2 id="localforage-adapter-methods">LocalForage Adapter Methods</h2>
 
             </div>
             
@@ -205,7 +205,7 @@ Generate four random hex digits.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  _.extend(LocalStorage.prototype, {
+            <div class="content"><div class='highlight'><pre>  _.extend(LocalForage.prototype, {
     initialize: <span class="function"><span class="keyword">function</span><span class="params">(options)</span> {</span>
       <span class="keyword">this</span>.dbName = options.dbName;
       <span class="keyword">this</span>.tableName = options.tableName;
@@ -213,21 +213,31 @@ Generate four random hex digits.</p>
       <span class="keyword">return</span> <span class="keyword">this</span>;
     },
 
-    setup: <span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
+    setup: <span class="function"><span class="keyword">function</span><span class="params">(callback)</span> {</span>
       <span class="keyword">this</span>.setupDatabase();
-      <span class="keyword">this</span>.setupTable();
+      <span class="keyword">this</span>.setupTable(callback);
     },
 
     setupDatabase: <span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
       <span class="keyword">this</span>.database = <span class="literal">null</span>;
-      <span class="keyword">this</span>.database = <span class="keyword">new</span> Romantic.LocalStorage.DB(<span class="keyword">this</span>.dbName);
+      <span class="keyword">this</span>.database = <span class="keyword">new</span> Romantic.LocalForage.DB(<span class="keyword">this</span>.dbName);
     },
 
-    setupTable: <span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
+    setupTable: <span class="function"><span class="keyword">function</span><span class="params">(callback)</span> {</span>
+      <span class="keyword">var</span> that = <span class="keyword">this</span>;
       <span class="keyword">if</span>(!_.include(<span class="keyword">this</span>.tables(), <span class="keyword">this</span>.tableName)) {
+        <span class="keyword">this</span>.table = [];
         <span class="keyword">this</span>.setTable([]);
+        <span class="keyword">if</span>(callback) {
+          callback([]);
+        }
       } <span class="keyword">else</span> {
-        <span class="keyword">this</span>.table = <span class="keyword">this</span>.database.get(<span class="keyword">this</span>.tableName);
+        <span class="keyword">this</span>.database.get(<span class="keyword">this</span>.tableName, <span class="function"><span class="keyword">function</span><span class="params">(data)</span>{</span>
+          that.table = data;
+          <span class="keyword">if</span>(callback) {
+            callback(_.clone(data));
+          }
+        });
       }
     },</pre></div></div>
             
@@ -244,15 +254,20 @@ Generate four random hex digits.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    replace: <span class="function"><span class="keyword">function</span><span class="params">(newTable)</span> {</span>
+            <div class="content"><div class='highlight'><pre>    replace: <span class="function"><span class="keyword">function</span><span class="params">(newTable, callback)</span> {</span>
       <span class="keyword">if</span>(newTable == <span class="literal">null</span>) { newTable = <span class="keyword">this</span>.table; }
-      <span class="keyword">return</span> <span class="keyword">this</span>.setTable(newTable);
+      <span class="keyword">return</span> <span class="keyword">this</span>.setTable(newTable, callback);
     },
 
-    setTable: <span class="function"><span class="keyword">function</span><span class="params">(data)</span> {</span>
-      <span class="keyword">if</span>(data) {
-        <span class="keyword">this</span>.database.set(<span class="keyword">this</span>.tableName, data);
-        <span class="keyword">this</span>.table = <span class="keyword">this</span>.database.get(<span class="keyword">this</span>.tableName);
+    setTable: <span class="function"><span class="keyword">function</span><span class="params">(data, callback)</span> {</span>
+      <span class="keyword">var</span> that = <span class="keyword">this</span>;
+      <span class="keyword">if</span>(_.isArray(data)) {
+        <span class="keyword">this</span>.database.set(<span class="keyword">this</span>.tableName, data, <span class="function"><span class="keyword">function</span><span class="params">(newData)</span>{</span>
+          that.table = newData;
+          <span class="keyword">if</span>(callback) {
+            callback(newData);
+          }
+        });
       } <span class="keyword">else</span> {</pre></div></div>
             
         </li>
@@ -269,7 +284,7 @@ database to the local copy</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>        <span class="keyword">this</span>.setup()
+            <div class="content"><div class='highlight'><pre>        <span class="keyword">this</span>.setup(callback)
       }
       <span class="keyword">return</span> <span class="keyword">this</span>.table;
     },</pre></div></div>
@@ -304,10 +319,11 @@ database to the local copy</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    destroyAll: <span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
-      <span class="keyword">var</span> deletedDB = <span class="keyword">this</span>.database.destroy(<span class="keyword">this</span>.tableName);
-      <span class="keyword">this</span>.setup();
-      <span class="keyword">return</span> deletedDB;
+            <div class="content"><div class='highlight'><pre>    destroyAll: <span class="function"><span class="keyword">function</span><span class="params">(callback)</span> {</span>
+      <span class="keyword">var</span> that = <span class="keyword">this</span>;
+      <span class="keyword">return</span> <span class="keyword">this</span>.database.destroy(<span class="keyword">this</span>.tableName, <span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
+        that.setup(callback);
+      });
     },</pre></div></div>
             
         </li>
@@ -323,8 +339,8 @@ database to the local copy</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    all: <span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
-      <span class="keyword">return</span> _.clone(<span class="keyword">this</span>.table);
+            <div class="content"><div class='highlight'><pre>    all: <span class="function"><span class="keyword">function</span><span class="params">(callback)</span> {</span>
+      <span class="keyword">return</span> callback(_.clone(<span class="keyword">this</span>.table));
     },</pre></div></div>
             
         </li>
@@ -342,7 +358,7 @@ take precedence</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    find: <span class="function"><span class="keyword">function</span><span class="params">(data)</span> {</span>
+            <div class="content"><div class='highlight'><pre>    find: <span class="function"><span class="keyword">function</span><span class="params">(data, callback)</span> {</span>
       <span class="keyword">var</span> _this, id, cid, match, isValidId;
       id = data;
 
@@ -376,7 +392,7 @@ take precedence</p>
               </div>
               <p>Used to find matches in the table. Purposely using lazy == so that
 there aren&#39;t issues with an id being a string like &quot;123&quot; and not
-matching 123</p>
+matching 124</p>
 
             </div>
             
@@ -415,7 +431,7 @@ TODO: this could definitely be refactored</p>
           match =  lazyFindMatch(<span class="string">'cid'</span>, id);
         }
       }
-      <span class="keyword">return</span> _.clone(match);
+      <span class="keyword">return</span> callback(_.clone(match));
     },</pre></div></div>
             
         </li>
@@ -433,12 +449,15 @@ Returns the new object</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    create: <span class="function"><span class="keyword">function</span><span class="params">(data)</span> {</span>
+            <div class="content"><div class='highlight'><pre>    create: <span class="function"><span class="keyword">function</span><span class="params">(data, callback)</span> {</span>
       <span class="keyword">var</span> table;
       data.cid = guid();
       <span class="keyword">this</span>.table.push(data);
-      <span class="keyword">this</span>.replace();
-      <span class="keyword">return</span> _.clone(data);
+      table = <span class="keyword">this</span>.table
+
+      <span class="keyword">return</span> <span class="keyword">this</span>.replace(table, <span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
+        callback(_.clone(data));
+      });
     },</pre></div></div>
             
         </li>
@@ -455,18 +474,19 @@ Returns the modified object</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    update: <span class="function"><span class="keyword">function</span><span class="params">(data)</span> {</span>
-      <span class="keyword">var</span> row, index;
-
-      row   = <span class="keyword">this</span>.find(data);
-      index = _.deepIndex(<span class="keyword">this</span>.table, row);
-      <span class="keyword">if</span>(!row) {
-        <span class="keyword">throw</span> <span class="keyword">new</span> Error(<span class="string">'Couldnt find record with that id or cid'</span>);
-      }
-      row = _.extend(row, data);
-      <span class="keyword">this</span>.table[index] = row;
-      <span class="keyword">this</span>.replace();
-      <span class="keyword">return</span> _.clone(row);
+            <div class="content"><div class='highlight'><pre>    update: <span class="function"><span class="keyword">function</span><span class="params">(data, callback)</span> {</span>
+      <span class="keyword">var</span> row, index, that = <span class="keyword">this</span>;
+      <span class="keyword">return</span> <span class="keyword">this</span>.find(data, <span class="function"><span class="keyword">function</span><span class="params">(row)</span>{</span>
+        index = _.deepIndex(that.table, row);
+        <span class="keyword">if</span>(!row) {
+          <span class="keyword">throw</span> <span class="keyword">new</span> Error(<span class="string">'Couldnt find record with that id or cid'</span>);
+        }
+        row = _.extend(row, data);
+        that.table[index] = row;
+        that.replace(that.table, <span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
+          <span class="keyword">return</span> callback(_.clone(row));
+        });
+      });
     },</pre></div></div>
             
         </li>
@@ -483,16 +503,19 @@ Returns the deleted row</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    destroy: <span class="function"><span class="keyword">function</span><span class="params">(data)</span> {</span>
-      <span class="keyword">var</span> row, index;
-      row = <span class="keyword">this</span>.find(data);
-      <span class="keyword">if</span>(!row) { <span class="keyword">return</span> <span class="literal">false</span>; }
-      index = _.deepIndex(<span class="keyword">this</span>.table, row);
-      <span class="keyword">if</span>(index !== <span class="literal">undefined</span>) {
-        <span class="keyword">this</span>.table.splice(index,<span class="number">1</span>);
-      }
-      <span class="keyword">this</span>.replace()
-      <span class="keyword">return</span> _.clone(row);
+            <div class="content"><div class='highlight'><pre>    destroy: <span class="function"><span class="keyword">function</span><span class="params">(data, callback)</span> {</span>
+      <span class="keyword">var</span> that = <span class="keyword">this</span>;
+      <span class="keyword">return</span> <span class="keyword">this</span>.find(data, <span class="function"><span class="keyword">function</span><span class="params">(row)</span>{</span>
+        <span class="keyword">var</span> index;
+        <span class="keyword">if</span>(!row) { callback(<span class="literal">false</span>); <span class="keyword">return</span>; }
+        index = _.deepIndex(that.table, row);
+        <span class="keyword">if</span>(index !== <span class="literal">undefined</span>) {
+          that.table.splice(index,<span class="number">1</span>);
+        }
+        that.replace(that.table, <span class="function"><span class="keyword">function</span><span class="params">()</span>{</span>
+          callback(_.clone(row));
+        });
+      });
     }
   });</pre></div></div>
             
@@ -521,7 +544,7 @@ Returns the deleted row</p>
               
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="keyword">var</span> DB = Romantic.LocalStorage.DB = <span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
+            <div class="content"><div class='highlight'><pre>  <span class="keyword">var</span> DB = Romantic.LocalForage.DB = <span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
     <span class="keyword">this</span>.initialize.apply(<span class="keyword">this</span>, arguments);
   };</pre></div></div>
             
@@ -572,29 +595,41 @@ after it&#39;s been cleared</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>    reload: <span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
-      <span class="keyword">this</span>._database = store.namespace(<span class="keyword">this</span>._dbName);
+      <span class="keyword">this</span>._database = localforage.namespace(<span class="keyword">this</span>._dbName);
       <span class="keyword">return</span> <span class="keyword">this</span>._database;
     },
 
-    all: <span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
-      <span class="keyword">return</span> <span class="keyword">this</span>._database.getAll();
+    all: <span class="function"><span class="keyword">function</span><span class="params">(callback)</span> {</span>
+      <span class="keyword">var</span> that = <span class="keyword">this</span>;
+      <span class="keyword">return</span> <span class="keyword">this</span>._database._getKeysCache(<span class="function"><span class="keyword">function</span><span class="params">(keys)</span>{</span>
+        <span class="keyword">if</span>(callback &amp;&amp; !keys) { callback([]); }
+
+        promises = keys.map(<span class="function"><span class="keyword">function</span><span class="params">(key)</span>{</span>
+          that._database.get(key)
+        });
+
+        Promise.all(promises).then(<span class="function"><span class="keyword">function</span><span class="params">(results)</span>{</span>
+          <span class="keyword">if</span>(callback) {
+            callback(results)
+          }
+        })
+      });
     },
 
     tables: <span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
       <span class="keyword">return</span> _.keys(<span class="keyword">this</span>.all());
     },
 
-    get: <span class="function"><span class="keyword">function</span><span class="params">(tableName)</span> {</span>
-      <span class="keyword">return</span> <span class="keyword">this</span>._database.get(tableName);
+    get: <span class="function"><span class="keyword">function</span><span class="params">(tableName, callback)</span> {</span>
+      <span class="keyword">return</span> <span class="keyword">this</span>._database.getItem(tableName, callback);
     },
 
-    set: <span class="function"><span class="keyword">function</span><span class="params">(tableName, data)</span> {</span>
-      <span class="keyword">this</span>._database.set(tableName, data);
-      <span class="keyword">return</span> <span class="keyword">this</span>.get(tableName);
+    set: <span class="function"><span class="keyword">function</span><span class="params">(tableName, data, callback)</span> {</span>
+      <span class="keyword">return</span> <span class="keyword">this</span>._database.setItem(tableName, data, callback);
     },
 
-    destroy: <span class="function"><span class="keyword">function</span><span class="params">(tableName)</span> {</span>
-      <span class="keyword">return</span> <span class="keyword">this</span>._database.remove(tableName);
+    destroy: <span class="function"><span class="keyword">function</span><span class="params">(tableName, callback)</span> {</span>
+      <span class="keyword">return</span> <span class="keyword">this</span>._database.removeItem(tableName, callback);
     }
 
   });</pre></div></div>
@@ -698,7 +733,7 @@ create another adapter you can pass in an adapter to the options hash</p>
             
             <div class="content"><div class='highlight'><pre>    _setStore: <span class="function"><span class="keyword">function</span><span class="params">(tableName, options)</span> {</span>
       options.tableName = <span class="keyword">this</span>.tableName || tableName
-      <span class="keyword">this</span>._store = <span class="keyword">this</span>.adapter ? <span class="keyword">new</span> <span class="keyword">this</span>.adapter(options) : <span class="keyword">new</span> Romantic.LocalStorage(options);
+      <span class="keyword">this</span>._store = <span class="keyword">this</span>.adapter ? <span class="keyword">new</span> <span class="keyword">this</span>.adapter(options) : <span class="keyword">new</span> Romantic.LocalForage(options);
     },</pre></div></div>
             
         </li>
@@ -720,8 +755,8 @@ carsTable.replace(cars);</code></pre>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    replace: <span class="function"><span class="keyword">function</span><span class="params">(table)</span> {</span>
-      <span class="keyword">this</span>._store.setTable(<span class="keyword">this</span>.filterData(table));
+            <div class="content"><div class='highlight'><pre>    replace: <span class="function"><span class="keyword">function</span><span class="params">(table, callback)</span> {</span>
+      <span class="keyword">this</span>._store.setTable(<span class="keyword">this</span>.filterData(table), callback);
     },</pre></div></div>
             
         </li>
@@ -943,9 +978,8 @@ verify that it is one of those types</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    create: <span class="function"><span class="keyword">function</span><span class="params">(data)</span> {</span>
-      <span class="keyword">this</span>._store.create(<span class="keyword">this</span>.filterData(data));
-      <span class="keyword">return</span> <span class="keyword">this</span>.find(data);
+            <div class="content"><div class='highlight'><pre>    create: <span class="function"><span class="keyword">function</span><span class="params">(data, callback)</span> {</span>
+      <span class="keyword">return</span> <span class="keyword">this</span>._store.create(<span class="keyword">this</span>.filterData(data), callback);
     },</pre></div></div>
             
         </li>
@@ -962,10 +996,13 @@ array of that data</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    all: <span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
-      <span class="keyword">return</span> _.map(<span class="keyword">this</span>._store.all(), <span class="function"><span class="keyword">function</span><span class="params">(row)</span> {</span>
-        <span class="keyword">return</span> <span class="keyword">this</span>.filterData(row);
-      }, <span class="keyword">this</span>);
+            <div class="content"><div class='highlight'><pre>    all: <span class="function"><span class="keyword">function</span><span class="params">(callback)</span> {</span>
+      <span class="keyword">var</span> that = <span class="keyword">this</span>;
+      <span class="keyword">return</span> <span class="keyword">this</span>._store.all(<span class="function"><span class="keyword">function</span><span class="params">(data)</span> {</span>
+        callback(_.map(data, <span class="function"><span class="keyword">function</span><span class="params">(row)</span> {</span>
+          <span class="keyword">return</span> <span class="keyword">this</span>.filterData(row);
+        }, that));
+      });
     },</pre></div></div>
             
         </li>
@@ -981,8 +1018,8 @@ array of that data</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    find: <span class="function"><span class="keyword">function</span><span class="params">(data)</span> {</span>
-      <span class="keyword">return</span> <span class="keyword">this</span>._store.find(data);
+            <div class="content"><div class='highlight'><pre>    find: <span class="function"><span class="keyword">function</span><span class="params">(data, callback)</span> {</span>
+      <span class="keyword">return</span> <span class="keyword">this</span>._store.find(data, callback);
     },</pre></div></div>
             
         </li>
@@ -998,9 +1035,8 @@ array of that data</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    update: <span class="function"><span class="keyword">function</span><span class="params">(data)</span> {</span>
-      <span class="keyword">this</span>._store.update(<span class="keyword">this</span>.filterData(data));
-      <span class="keyword">return</span> <span class="keyword">this</span>.find(data);
+            <div class="content"><div class='highlight'><pre>    update: <span class="function"><span class="keyword">function</span><span class="params">(data, callback)</span> {</span>
+      <span class="keyword">return</span> <span class="keyword">this</span>._store.update(<span class="keyword">this</span>.filterData(data), callback);
     },</pre></div></div>
             
         </li>
@@ -1016,8 +1052,8 @@ array of that data</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    destroyAll: <span class="function"><span class="keyword">function</span><span class="params">()</span> {</span>
-      <span class="keyword">return</span> <span class="keyword">this</span>._store.destroyAll();
+            <div class="content"><div class='highlight'><pre>    destroyAll: <span class="function"><span class="keyword">function</span><span class="params">(callback)</span> {</span>
+      <span class="keyword">return</span> <span class="keyword">this</span>._store.destroyAll(callback);
     },</pre></div></div>
             
         </li>
@@ -1033,8 +1069,8 @@ array of that data</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    destroy: <span class="function"><span class="keyword">function</span><span class="params">(data)</span> {</span>
-      <span class="keyword">return</span> <span class="keyword">this</span>._store.destroy(data);
+            <div class="content"><div class='highlight'><pre>    destroy: <span class="function"><span class="keyword">function</span><span class="params">(data, callback)</span> {</span>
+      <span class="keyword">return</span> <span class="keyword">this</span>._store.destroy(data, callback);
     }
 
   });</pre></div></div>
@@ -1226,7 +1262,7 @@ later.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  DB.extend = LocalStorage.extend = Table.extend = extend;
+            <div class="content"><div class='highlight'><pre>  DB.extend = LocalForage.extend = Table.extend = extend;
 
   <span class="keyword">return</span> Romantic;
 }));</pre></div></div>

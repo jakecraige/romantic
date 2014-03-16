@@ -3,23 +3,22 @@ Romantic.js
 v0.0.1
 
 *TODO:*
-+  Test Extending Romantic.Table with Schema
 +  Relationships
-+  Remove store2 dependency in LocalStorageAdapter
++  Update How-To section to use callbacks
 
 Description:
 --------------------
-Library for managing client side data in web and mobile applications.
+Library for managing client side model data in web and mobile applications.
 
-It comes with a LocalStorage adapter that treats LocalStorage database and provides and interface
-for managing and querying the data.
+It comes with a default localforage adapter that will pick the best storage for
+the environment and uses that to manage and query the data.
 
 Dependencies:
 ------------------
  +  Underscore - https://github.com/jashkenas/underscore
- +  Store2     - https://github.com/nbubna/store
+ +  Localforage     - https://github.com/mozilla/localforage
 
-How-To:
+How-To: (out-of-date)
 ------------------
 See example/angular/js/models/user_model.js for an example of how to extend the
 basic table so you can add a schema and provide validations.

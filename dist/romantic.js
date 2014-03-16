@@ -40,14 +40,14 @@
     }
   };
 
-  // LocalStorage Adapter Constructor
+  // LocalForage Adapter Constructor
   // -------------------------------
 
-  var LocalStorage = Romantic.LocalStorage = function() {
+  var LocalForage = Romantic.LocalForage = function() {
     this.initialize.apply(this, arguments);
   };
 
-  // LocalStorage Adapter Methods
+  // LocalForage Adapter Methods
   // ------------------------------
 
   // Guid generation borrowed from
@@ -72,7 +72,7 @@
   //  + all
   //  + exists
   //  + destroyAll
-  _.extend(LocalStorage.prototype, {
+  _.extend(LocalForage.prototype, {
     initialize: function(options) {
       this.dbName = options.dbName;
       this.tableName = options.tableName;
@@ -80,38 +80,53 @@
       return this;
     },
 
-    setup: function() {
+    setup: function(callback) {
       this.setupDatabase();
-      this.setupTable();
+      this.setupTable(callback);
     },
 
     setupDatabase: function() {
       this.database = null;
-      this.database = new Romantic.LocalStorage.DB(this.dbName);
+      this.database = new Romantic.LocalForage.DB(this.dbName);
     },
 
-    setupTable: function() {
+    setupTable: function(callback) {
+      var that = this;
       if(!_.include(this.tables(), this.tableName)) {
+        this.table = [];
         this.setTable([]);
+        if(callback) {
+          callback([]);
+        }
       } else {
-        this.table = this.database.get(this.tableName);
+        this.database.get(this.tableName, function(data){
+          that.table = data;
+          if(callback) {
+            callback(_.clone(data));
+          }
+        });
       }
     },
 
     // Replaces the table with the array of objects passed in
-    replace: function(newTable) {
+    replace: function(newTable, callback) {
       if(newTable == null) { newTable = this.table; }
-      return this.setTable(newTable);
+      return this.setTable(newTable, callback);
     },
 
-    setTable: function(data) {
-      if(data) {
-        this.database.set(this.tableName, data);
-        this.table = this.database.get(this.tableName);
+    setTable: function(data, callback) {
+      var that = this;
+      if(_.isArray(data)) {
+        this.database.set(this.tableName, data, function(newData){
+          that.table = newData;
+          if(callback) {
+            callback(newData);
+          }
+        });
       } else {
         // If this function called without any data we are trying to reset the
         // database to the local copy
-        this.setup()
+        this.setup(callback)
       }
       return this.table;
     },
@@ -122,21 +137,22 @@
     },
 
     // Removes the table completely from the database
-    destroyAll: function() {
-      var deletedDB = this.database.destroy(this.tableName);
-      this.setup();
-      return deletedDB;
+    destroyAll: function(callback) {
+      var that = this;
+      return this.database.destroy(this.tableName, function() {
+        that.setup(callback);
+      });
     },
 
     // Returns the table, an array of objects
-    all: function() {
-      return _.clone(this.table);
+    all: function(callback) {
+      return callback(_.clone(this.table));
     },
 
     // When passed in an object/string/num it will pull out the id or cid and
     // find that in the table and return the found object, the id will always
     // take precedence
-    find: function(data) {
+    find: function(data, callback) {
       var _this, id, cid, match, isValidId;
       id = data;
 
@@ -161,7 +177,7 @@
 
       // Used to find matches in the table. Purposely using lazy == so that
       // there aren't issues with an id being a string like "123" and not
-      // matching 123
+      // matching 124
       _this = this;
       lazyFindMatch = function(key, val) {
         return _.find(_this.table, function(row){
@@ -185,55 +201,62 @@
           match =  lazyFindMatch('cid', id);
         }
       }
-      return _.clone(match);
+      return callback(_.clone(match));
     },
 
     // Pass in an object that will be given a unique cid, pushed onto the table,
     // and saved
     // Returns the new object
-    create: function(data) {
+    create: function(data, callback) {
       var table;
       data.cid = guid();
       this.table.push(data);
-      this.replace();
-      return _.clone(data);
+      table = this.table
+
+      return this.replace(table, function() {
+        callback(_.clone(data));
+      });
     },
 
     // Pass in an object that will be updated and saved
     // Returns the modified object
-    update: function(data) {
-      var row, index;
-
-      row   = this.find(data);
-      index = _.deepIndex(this.table, row);
-      if(!row) {
-        throw new Error('Couldnt find record with that id or cid');
-      }
-      row = _.extend(row, data);
-      this.table[index] = row;
-      this.replace();
-      return _.clone(row);
+    update: function(data, callback) {
+      var row, index, that = this;
+      return this.find(data, function(row){
+        index = _.deepIndex(that.table, row);
+        if(!row) {
+          throw new Error('Couldnt find record with that id or cid');
+        }
+        row = _.extend(row, data);
+        that.table[index] = row;
+        that.replace(that.table, function() {
+          return callback(_.clone(row));
+        });
+      });
     },
 
     // Pass in an object/id that will be destroyed and saved on the table
     // Returns the deleted row
-    destroy: function(data) {
-      var row, index;
-      row = this.find(data);
-      if(!row) { return false; }
-      index = _.deepIndex(this.table, row);
-      if(index !== undefined) {
-        this.table.splice(index,1);
-      }
-      this.replace()
-      return _.clone(row);
+    destroy: function(data, callback) {
+      var that = this;
+      return this.find(data, function(row){
+        var index;
+        if(!row) { callback(false); return; }
+        index = _.deepIndex(that.table, row);
+        if(index !== undefined) {
+          that.table.splice(index,1);
+        }
+        that.replace(that.table, function(){
+          callback(_.clone(row));
+        });
+      });
     }
   });
 
   // DB Constructor
   // -------------------------------
 
-  var DB = Romantic.LocalStorage.DB = function() {
+  var DB = Romantic.LocalForage.DB = function() {
     this.initialize.apply(this, arguments);
   };
 
@@ -250,29 +273,41 @@
     // Sets up the local database. Called externally to reload the database
     // after it's been cleared
     reload: function() {
-      this._database = store.namespace(this._dbName);
+      this._database = localforage.namespace(this._dbName);
       return this._database;
     },
 
-    all: function() {
-      return this._database.getAll();
+    all: function(callback) {
+      var that = this;
+      return this._database._getKeysCache(function(keys){
+        if(callback && !keys) { callback([]); }
+
+        promises = keys.map(function(key){
+          that._database.get(key)
+        });
+
+        Promise.all(promises).then(function(results){
+          if(callback) {
+            callback(results)
+          }
+        })
+      });
     },
 
     tables: function() {
       return _.keys(this.all());
     },
 
-    get: function(tableName) {
-      return this._database.get(tableName);
+    get: function(tableName, callback) {
+      return this._database.getItem(tableName, callback);
     },
 
-    set: function(tableName, data) {
-      this._database.set(tableName, data);
-      return this.get(tableName);
+    set: function(tableName, data, callback) {
+      return this._database.setItem(tableName, data, callback);
     },
 
-    destroy: function(tableName) {
-      return this._database.remove(tableName);
+    destroy: function(tableName, callback) {
+      return this._database.removeItem(tableName, callback);
     }
 
   });
@@ -310,7 +345,7 @@
     // This sets up the store instance inside the object
     _setStore: function(tableName, options) {
       options.tableName = this.tableName || tableName
-      this._store = this.adapter ? new this.adapter(options) : new Romantic.LocalStorage(options);
+      this._store = this.adapter ? new this.adapter(options) : new Romantic.LocalForage(options);
     },
 
     // Takes an optional table parameter(array of objects), this allows you to
@@ -323,8 +358,8 @@
     //     var cars = [{make: 'Chevrolet', cid: 1}, {make: 'Dodge', cid: 2}];
     //     var carsTable = new Romantic.DB.Table('cars');
     //     carsTable.replace(cars);
-    replace: function(table) {
-      this._store.setTable(this.filterData(table));
+    replace: function(table, callback) {
+      this._store.setTable(this.filterData(table), callback);
     },
 
     // Utility function to console.table out the table for easy debugging
@@ -413,38 +448,39 @@
     },
 
     // Defers to current store's `create`
-    create: function(data) {
-      this._store.create(this.filterData(data));
-      return this.find(data);
+    create: function(data, callback) {
+      return this._store.create(this.filterData(data), callback);
     },
 
     // Gets all data from current store via `all` and filters it and returns an
     // array of that data
-    all: function() {
-      return _.map(this._store.all(), function(row) {
-        return this.filterData(row);
-      }, this);
+    all: function(callback) {
+      var that = this;
+      return this._store.all(function(data) {
+        callback(_.map(data, function(row) {
+          return this.filterData(row);
+        }, that));
+      });
     },
 
     // Defers to the current store's `find`
-    find: function(data) {
-      return this._store.find(data);
+    find: function(data, callback) {
+      return this._store.find(data, callback);
     },
 
     // Filters data via schema and defers to current store's `update`
-    update: function(data) {
-      this._store.update(this.filterData(data));
-      return this.find(data);
+    update: function(data, callback) {
+      return this._store.update(this.filterData(data), callback);
     },
 
     // Defers to the current store's `deferAll`
-    destroyAll: function() {
-      return this._store.destroyAll();
+    destroyAll: function(callback) {
+      return this._store.destroyAll(callback);
     },
 
     // Defers to current store's `create`
-    destroy: function(data) {
-      return this._store.destroy(data);
+    destroy: function(data, callback) {
+      return this._store.destroy(data, callback);
     }
 
   });
@@ -518,7 +554,7 @@
 
   // End of Code Borrowed From Backbone
   // http://backbonejs.org
-  DB.extend = LocalStorage.extend = Table.extend = extend;
+  DB.extend = LocalForage.extend = Table.extend = extend;
 
   return Romantic;
 }));
