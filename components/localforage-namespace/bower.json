@@ -1,0 +1,26 @@
+{
+  "name": "localforage-namespace",
+  "version": "0.0.1",
+  "homepage": "https://github.com/jakecraige/localforage-namespace",
+  "description": "localforage wrapper to support namespacing",
+  "main": "dist/localforage-namespace.js",
+  "moduleType": [
+    "globals"
+  ],
+  "keywords": [
+    "localforage",
+    "mozilla",
+    "localstorage"
+  ],
+  "authors": [
+    "Jake Craige"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
