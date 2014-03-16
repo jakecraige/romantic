@@ -32,7 +32,7 @@
   // Create local references to array methods we'll want to use later.(Backbone)
   var array = [];
 
-  Romantic.VERSION = '0.0.1';
+  Romantic.VERSION = '0.1.0';
 
   Romantic.String = {
     capitalize: function(str) {
